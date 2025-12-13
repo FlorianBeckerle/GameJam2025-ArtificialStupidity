@@ -74,8 +74,9 @@ public class PipeManager : MonoBehaviour
         int width = rows[0].Length;
         
         //Instantiate Background
-        Vector3 worldPos = this.transform.position + new Vector3(32f*width/2f, 23f*height/2f ,0f);
+        Vector3 worldPos = this.transform.position + new Vector3(width/2f, height/2f ,0f);
         GameObject bg = Instantiate(background, worldPos, Quaternion.Euler(0f,0f,0f), transform);
+        
 
         // Validate consistent row widths
         for (int i = 0; i < rows.Length; i++)

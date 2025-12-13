@@ -154,6 +154,7 @@ MonoBehaviour:
   _ende: {fileID: 4553886417308755477}
   _isEnd: 0
   isOn: 1
+  _next: {fileID: 0}
 --- !u!50 &2485224616082815996
 Rigidbody2D:
   serializedVersion: 5
@@ -179,5 +180,5 @@ Rigidbody2D:
     m_Bits: 0
   m_Interpolate: 0
   m_SleepingMode: 1
-  m_CollisionDetection: 0
+  m_CollisionDetection: 1
   m_Constraints: 7

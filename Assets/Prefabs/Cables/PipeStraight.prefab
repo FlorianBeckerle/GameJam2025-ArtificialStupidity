@@ -55,6 +55,7 @@ MonoBehaviour:
   _ende: {fileID: 1036300945003122937}
   _isEnd: 0
   isOn: 0
+  _next: {fileID: 0}
 --- !u!61 &1936786402084446069
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -172,7 +173,7 @@ Rigidbody2D:
     m_Bits: 0
   m_Interpolate: 0
   m_SleepingMode: 1
-  m_CollisionDetection: 0
+  m_CollisionDetection: 1
   m_Constraints: 7
 --- !u!1 &5799698519368500179
 GameObject:

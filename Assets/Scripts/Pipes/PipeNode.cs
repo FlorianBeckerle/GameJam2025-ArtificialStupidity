@@ -24,15 +24,14 @@ namespace Pipes
         [SerializeField] private PipeNode _next;
         private bool _pendingState;
 
-        bool isPropagating;
-
         void Update()
         {
             if (_next == null) return;
+            
 
-            if (!isPropagating && _next.isOn != isOn)
+            if (!_pendingState && _next.isOn != isOn && isOn)
             {
-                isPropagating = true;
+                
                 _pendingState = isOn;
                 Invoke(nameof(InvokeNext), 1f);
             }
@@ -41,13 +40,17 @@ namespace Pipes
         void InvokeNext()
         {
             _next.SwitchMode(_pendingState);
-            isPropagating = false;
+            _pendingState = false;
         }
 
         public void SwitchMode(bool isOn)
         {
-            _on.SetActive(isOn); //when true turn on
-            _off.SetActive(!isOn); //when true turn off
+            if (!_isEnd)
+            {
+                _on.SetActive(isOn); //when true turn on
+                _off.SetActive(!isOn); //when true turn off    
+            }
+
             this.isOn = isOn;
             if (_isEnd)
             {
@@ -64,12 +67,9 @@ namespace Pipes
         {
             if (other.TryGetComponent<PipeNode>(out var node))
             {
-                _next = node;
-            }
-
-            if (_next._ende == other)
-            {
-                _next = null;
+                //Only set node if it touches the others start
+                if(node._ende != other)
+                    _next = node;
             }
         }
 

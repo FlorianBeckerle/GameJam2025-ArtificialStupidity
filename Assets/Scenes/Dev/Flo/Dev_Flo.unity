@@ -157,21 +157,23 @@ MonoBehaviour:
   pipeStart: {fileID: 929863641465181169, guid: 33c68988817d0a9448e3392c6e7dd475, type: 3}
   pipeEnd: {fileID: 909142803376976149, guid: 358804c270f0f744d95b2211649a5d99, type: 3}
   pipeBadEnd: {fileID: 949797393567399924, guid: 66799319fa3fa09409cbf182e943b6a3, type: 3}
-  layout: '0000LrrL000000
+  layout: '00000000000000
 
-    0000u00d000000
-
-    0000u00Lrrre00
+    00000000000000
 
     0srrL000000000
 
-    0000d00000LE00
+    0000d000000000
 
-    0000RrrL00u000
+    0000RrrL000000
 
-    0000000d00u000
+    00000000d00000
 
-    0000000RrrR000'
+    00000000Rrrre0
+
+    00000000000000
+
+'
   clearChildrenBeforeGenerate: 1
   generateOnStart: 1
 --- !u!156049354 &31537896
