@@ -11,7 +11,7 @@ public class PipeManager : MonoBehaviour
 {
     [Header("UI Elements")] 
     [SerializeField]
-    private float maxTimer = 10f; //X seconds to solve puzzle
+    private float maxTimer = 15f; //X seconds to solve puzzle
 
     private float maxWidth = 3.35f;
     
@@ -225,9 +225,10 @@ public class PipeManager : MonoBehaviour
     private void ClearChildren()
     {
         // Immediate in edit mode, Destroy in play mode
-        for (int i = transform.childCount - 1; i >= 0; i--)
+        for (int i = transform.childCount - 1; i >= 1; i--)
         {
             var child = transform.GetChild(i).gameObject;
+            
 #if UNITY_EDITOR
             if (!Application.isPlaying) DestroyImmediate(child);
             else Destroy(child);

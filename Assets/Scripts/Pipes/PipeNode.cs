@@ -33,7 +33,7 @@ namespace Pipes
             {
                 
                 _pendingState = isOn;
-                Invoke(nameof(InvokeNext), 1f);
+                Invoke(nameof(InvokeNext), 0.2f);
             }
         }
 
@@ -65,6 +65,10 @@ namespace Pipes
 
         void OnTriggerEnter2D(Collider2D other)
         {
+            // Ignore CircleCollider2D
+            if (other is CircleCollider2D)
+                return;
+            
             if (other.TryGetComponent<PipeNode>(out var node))
             {
                 //Only set node if it touches the others start
@@ -75,13 +79,27 @@ namespace Pipes
 
         void OnTriggerExit2D(Collider2D other)
         {
+            // Ignore CircleCollider2D
+            if (other is CircleCollider2D)
+                return;
+            
             if (other.TryGetComponent<PipeNode>(out var node))
             {
                 _next = null;
             }
         }
 
-        
+        private void OnMouseDown()
+        {
+            RotatePipe();
+        }
+
+        private void RotatePipe()
+        {
+            float z = transform.eulerAngles.z;
+            z = (z - 90f) % 360f;
+            transform.rotation = Quaternion.Euler(0f, 0f, z);
+        }
 
     }
 }
