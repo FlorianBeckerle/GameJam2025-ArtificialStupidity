@@ -9,13 +9,12 @@ public class InputRouter : MonoBehaviour, IInputRouter
     [SerializeField] private InputActionAsset asset;
     private InputActionMap activeMap;
     private InputAction moveAction, interactAction, jumpAction, sprintAction;
+    [SerializeField] private Animator animator;
 
     [Header("Inputs")] 
     [SerializeField] public Vector2 Move { get; private set; }
     [SerializeField] public bool RunHeld { get; private set; }
     [SerializeField] public bool JumpPressed { get; private set; }
-    
-
     
     void OnEnable()
     {
@@ -86,6 +85,19 @@ public class InputRouter : MonoBehaviour, IInputRouter
         if (moveAction == null) return;
         
         Move = moveAction.ReadValue<Vector2>();
+        if (Move.x != 0 || Move.y != 0)
+        {
+            animator.SetBool("isWalking", true);
+            animator.speed = 1;
+        }
+        else
+        {
+            animator.SetBool("isWalking", false);
+            animator.speed = 0;
+            animator.playbackTime = 0;
+        }
+        
+        
         
         
     }
@@ -135,10 +147,13 @@ public class InputRouter : MonoBehaviour, IInputRouter
     void OnSprintPerformed(InputAction.CallbackContext _)
     {
         RunHeld = true;
+        animator.speed = 2;
+        
     }
     
     void OnSprintCanceled(InputAction.CallbackContext _)
     {
         RunHeld = false;
+        animator.speed = 1;
     }
 }

@@ -176,6 +176,16 @@ public class PipeManager : MonoBehaviour
         return Quaternion.Euler(0, 0, steps * 90);
     }
 
+    void Update()
+    {
+        CheckConnections();
+    }
+
+    private void CheckConnections()
+    {
+        
+    }
+
     private void ClearChildren()
     {
         // Immediate in edit mode, Destroy in play mode
