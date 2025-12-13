@@ -247,7 +247,7 @@ Rigidbody2D:
   m_Mass: 1
   m_LinearDamping: 0
   m_AngularDamping: 0.05
-  m_GravityScale: 1
+  m_GravityScale: 0
   m_Material: {fileID: 0}
   m_IncludeLayers:
     serializedVersion: 2
@@ -294,7 +294,7 @@ CircleCollider2D:
   m_CompositeOperation: 0
   m_CompositeOrder: 0
   m_Offset: {x: 0, y: 0}
-  m_Radius: 0.08
+  m_Radius: 0.10331878
 --- !u!114 &5679495574202277646
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -353,7 +353,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: acc9e0d5bc82491419bc748e2d6b924e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  asset: {fileID: 0}
+  asset: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}
 --- !u!114 &8467487693069423174
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -369,6 +369,7 @@ MonoBehaviour:
   tuning: {fileID: 11400000, guid: 42790e25d0bd3be488cae1a2311dc90a, type: 2}
   inputRouter: {fileID: 7551912829395449362}
   graphics: {fileID: 0}
+  rb: {fileID: 0}
   currentSpeed: 0
 --- !u!114 &1901279537302073377
 MonoBehaviour:
