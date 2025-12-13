@@ -1,14 +1,26 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Threading;
 using Pipes;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.UI;
 
 public class PipeManager : MonoBehaviour
 {
+    [Header("UI Elements")] 
+    [SerializeField]
+    private float maxTimer = 10f; //X seconds to solve puzzle
+
+    private float maxWidth = 3.35f;
+    
+    [SerializeField]
+    private GameObject timerBar;
+    
     [Header("Grid")]
     [SerializeField] private Grid grid;
-
+    
     [Header("Pipe Prefabs")]
     [SerializeField] private GameObject background;
     [SerializeField] private GameObject pipeStraightPrefab;
@@ -36,7 +48,6 @@ public class PipeManager : MonoBehaviour
     [Header("Options")]
     [SerializeField] private bool clearChildrenBeforeGenerate = true;
     [SerializeField] private bool generateOnStart = true;
-
     void Awake()
     {
         if (!grid) grid = GetComponent<Grid>();
@@ -46,6 +57,8 @@ public class PipeManager : MonoBehaviour
     {
         if (generateOnStart)
             GenerateFromLayout();
+        
+        
     }
 
     [ContextMenu("Generate From Layout")]
@@ -76,7 +89,8 @@ public class PipeManager : MonoBehaviour
         //Instantiate Background
         Vector3 worldPos = this.transform.position + new Vector3(width/2f, height/2f ,0f);
         GameObject bg = Instantiate(background, worldPos, Quaternion.Euler(0f,0f,0f), transform);
-        
+        timerBar = bg.transform.Find("TimerBar").gameObject;
+        StartCoroutine(Timer());
 
         // Validate consistent row widths
         for (int i = 0; i < rows.Length; i++)
@@ -183,15 +197,30 @@ public class PipeManager : MonoBehaviour
         return Quaternion.Euler(0, 0, steps * 90);
     }
 
-    void Update()
+    private IEnumerator Timer()
     {
-        CheckConnections();
+        float curTime = 0f;
+
+        while (curTime < maxTimer)
+        {
+            curTime += Time.deltaTime;              // smoother for UI
+            float widthPercent = curTime / maxTimer; // 0 -> 1
+            float width = widthPercent * maxWidth;
+
+            var s = timerBar.transform.localScale;
+            timerBar.transform.localScale = new Vector3(width, s.y, s.z);
+
+            yield return null; // wait 1 frame
+        }
+
+        Close();
     }
 
-    private void CheckConnections()
+    private void Close()
     {
-        
+        Destroy(this.gameObject);
     }
+    
 
     private void ClearChildren()
     {
