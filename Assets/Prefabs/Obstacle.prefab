@@ -177,11 +177,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   stepSize: 1
   pushSpeed: 8
-  interactRadius: 1.1
   blockingMask:
     serializedVersion: 2
     m_Bits: 64
-  interactorMask:
-    serializedVersion: 2
-    m_Bits: 8
   pushKey: 101
