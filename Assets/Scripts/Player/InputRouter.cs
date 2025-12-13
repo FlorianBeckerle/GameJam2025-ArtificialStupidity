@@ -13,6 +13,8 @@ public class InputRouter : MonoBehaviour, IInputRouter
     [Header("Inputs")] 
     [SerializeField] public Vector2 Move { get; private set; }
     [SerializeField] public bool RunHeld { get; private set; }
+    [SerializeField] public bool JumpPressed { get; private set; }
+    
 
     
     void OnEnable()
@@ -42,7 +44,11 @@ public class InputRouter : MonoBehaviour, IInputRouter
     void SubscribeActions()
     {
         if (interactAction != null) interactAction.performed += OnInteractPerformed;
-        if (jumpAction != null) jumpAction.performed += OnJumpPerformed;
+        if (jumpAction != null)
+        {
+            jumpAction.performed += OnJumpPerformed;
+            jumpAction.canceled += OnJumpCanceled;
+        }
 
         if (sprintAction != null)
         {
@@ -50,6 +56,8 @@ public class InputRouter : MonoBehaviour, IInputRouter
             sprintAction.canceled  += OnSprintCanceled;
         }
     }
+
+    
 
     public void SwitchMode(MovementMode mode)
     {
@@ -116,7 +124,12 @@ public class InputRouter : MonoBehaviour, IInputRouter
 
     void OnJumpPerformed(InputAction.CallbackContext _)
     {
-        //Not sure if needed
+        JumpPressed = true;
+    }
+    
+    private void OnJumpCanceled(InputAction.CallbackContext obj)
+    {
+        JumpPressed = false;
     }
 
     void OnSprintPerformed(InputAction.CallbackContext _)

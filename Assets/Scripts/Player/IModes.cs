@@ -21,6 +21,8 @@ namespace Player
         Vector2 Move { get; }
         bool RunHeld { get; }
         
+        bool JumpPressed { get; }
+        
         void SwitchMode(MovementMode mode);
         void Tick();
     }

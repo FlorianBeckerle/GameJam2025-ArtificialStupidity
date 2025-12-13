@@ -1,5 +1,6 @@
 using Player;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 public class PlayerCore : MonoBehaviour
 {
@@ -50,8 +51,28 @@ public class PlayerCore : MonoBehaviour
     //Use this to test Switching between modes
     void LateUpdate()
     {
+        
         //TODO: Cycle through SETMODE, mode and output log
         // use only for debuging
+        
+        // toggle with F1 for quick testing
+        if (Keyboard.current != null && Keyboard.current.f1Key.wasPressedThisFrame)
+        {
+            MovementMode newMode = MovementMode.Default;
+
+            if (mode == MovementMode.Default)
+            {
+                newMode = MovementMode.Classic;
+            }
+            else
+            {
+                newMode = MovementMode.Default;
+            }
+                
+            SetMode(newMode);
+            
+            Debug.Log($"[PlayerCore] Toggled mode to {(newMode.ToString())}");
+        }
     }
     
     void OnEnable(){ Debug.Log("[PlayerCore] OnEnable"); }
