@@ -14,38 +14,41 @@ public class InputRouter : MonoBehaviour, IInputRouter
     [SerializeField] public Vector2 Move { get; private set; }
     [SerializeField] public bool RunHeld { get; private set; }
 
+    
     void OnEnable()
     {
         activeMap?.Enable();
-        
-        if(interactAction != null)
-            interactAction.performed += OnInteractPerformed;
-        
-        if(jumpAction != null)
-            jumpAction.performed += OnJumpPerformed;
-
-        if (sprintAction != null)
-        {
-            sprintAction.performed += OnSprintPerformed;
-            sprintAction.canceled += OnSprintCanceled;
-        }
-            
+        SubscribeActions(); // safe if nulls
     }
-    
+
     void OnDisable()
     {
-        if(interactAction != null)
-            interactAction.performed -= OnInteractPerformed;
-        
-        if(jumpAction != null)
-            jumpAction.performed -= OnJumpPerformed;
+        UnsubscribeActions();
+        activeMap?.Disable();
+    }
+    
+    void UnsubscribeActions()
+    {
+        if (interactAction != null) interactAction.performed -= OnInteractPerformed;
+        if (jumpAction != null) jumpAction.performed -= OnJumpPerformed;
 
         if (sprintAction != null)
         {
             sprintAction.performed -= OnSprintPerformed;
-            sprintAction.canceled -= OnSprintCanceled;
+            sprintAction.canceled  -= OnSprintCanceled;
         }
-            
+    }
+
+    void SubscribeActions()
+    {
+        if (interactAction != null) interactAction.performed += OnInteractPerformed;
+        if (jumpAction != null) jumpAction.performed += OnJumpPerformed;
+
+        if (sprintAction != null)
+        {
+            sprintAction.performed += OnSprintPerformed;
+            sprintAction.canceled  += OnSprintCanceled;
+        }
     }
 
     public void SwitchMode(MovementMode mode)
@@ -60,7 +63,11 @@ public class InputRouter : MonoBehaviour, IInputRouter
         }
 
         activeMap?.Disable();
+        
+        UnsubscribeActions();
         BindMap(target);
+        SubscribeActions();
+        
         activeMap?.Enable();
         Debug.Log($"[InputRouter] Switched to map: {target}");
     }
