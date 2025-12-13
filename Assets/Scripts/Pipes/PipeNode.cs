@@ -18,6 +18,8 @@ namespace Pipes
         private Collider2D _ende;
 
         [SerializeField] private bool _isEnd;
+
+        private bool isOn = false;
         
         
         
@@ -41,6 +43,8 @@ namespace Pipes
 
         void OnTriggerEnter2D(Collider2D other)
         {
+            if (!this.isOn) return;
+            
             other.GetComponent<PipeNode>().SwitchMode(true);
         }
 

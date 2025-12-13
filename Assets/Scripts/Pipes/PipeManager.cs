@@ -110,15 +110,15 @@ public class PipeManager : MonoBehaviour
                 break;
             case 'r':
                 prefab = pipeStraightPrefab;
-                rotation = Quaternion.Euler(0, 0, 90);
+                rotation = Quaternion.Euler(0, 0, -90);
                 break;
             case 'd':
                 prefab = pipeStraightPrefab;
-                rotation = Quaternion.Euler(0, 0, 180);
+                rotation = Quaternion.Euler(0, 0, -180);
                 break;
             case 'l':
                 prefab = pipeStraightPrefab;
-                rotation = Quaternion.Euler(0, 0, 270);
+                rotation = Quaternion.Euler(0, 0, -270);
                 break;
 
             // Curve pipes with random rotation

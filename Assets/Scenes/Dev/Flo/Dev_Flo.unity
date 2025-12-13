@@ -151,8 +151,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   grid: {fileID: 31537896}
   pipeStraightPrefab: {fileID: 1470881574975734995, guid: 75b7c9ea02b6324448dd08b2112a2909, type: 3}
-  pipeCurvePrefab: {fileID: 1470881574975734995, guid: 75b7c9ea02b6324448dd08b2112a2909, type: 3}
-  pipeCurveMirroredPrefab: {fileID: 1470881574975734995, guid: 75b7c9ea02b6324448dd08b2112a2909, type: 3}
+  pipeCurvePrefab: {fileID: 8797434132044489968, guid: ae7be2f72d2aa484ab7aa19fd6776867, type: 3}
+  pipeCurveMirroredPrefab: {fileID: 83510080118143078, guid: 965877ef832e2de4490c8611a7657c74, type: 3}
   pipeStart: {fileID: 1470881574975734995, guid: 75b7c9ea02b6324448dd08b2112a2909, type: 3}
   pipeEnd: {fileID: 1470881574975734995, guid: 75b7c9ea02b6324448dd08b2112a2909, type: 3}
   pipeBadEnd: {fileID: 1470881574975734995, guid: 75b7c9ea02b6324448dd08b2112a2909, type: 3}
@@ -716,7 +716,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6981238205690130860, guid: 31bc72ab0656d034d9296315ebc05c1d, type: 3}
       propertyPath: m_IsActive
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7551912829395449362, guid: 31bc72ab0656d034d9296315ebc05c1d, type: 3}
       propertyPath: animator
