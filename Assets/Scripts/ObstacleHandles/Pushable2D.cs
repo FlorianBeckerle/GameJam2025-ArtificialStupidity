@@ -21,11 +21,11 @@ public class Pushable2D : MonoBehaviour
 
     void Awake()
     {
-        rb = GetComponent<Rigidbody2D>();
+        rb = GetComponentInChildren<Rigidbody2D>();
         targetPos = rb.position;
 
         // den ersten NICHT-trigger Collider als Body nehmen
-        var cols = GetComponents<Collider2D>();
+        var cols = GetComponentsInChildren<Collider2D>();
         foreach (var c in cols)
         {
             if (!c.isTrigger) { bodyCollider = c; break; }
@@ -139,8 +139,8 @@ public class Pushable2D : MonoBehaviour
             return;
         }
 
-        float myDist = (transform.position - interactor.position).sqrMagnitude;
-        float selDist = (selected.transform.position - interactor.position).sqrMagnitude;
+        float myDist = (rb.transform.position - interactor.position).sqrMagnitude;
+        float selDist = (selected.rb.transform.position - interactor.position).sqrMagnitude;
 
         if (myDist < selDist) selected = this;
     }
