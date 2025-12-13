@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using Pipes;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class PipeManager : MonoBehaviour
 {
@@ -9,6 +10,7 @@ public class PipeManager : MonoBehaviour
     [SerializeField] private Grid grid;
 
     [Header("Pipe Prefabs")]
+    [SerializeField] private GameObject background;
     [SerializeField] private GameObject pipeStraightPrefab;
     [SerializeField] private GameObject pipeCurvePrefab;            // L
     [SerializeField] private GameObject pipeCurveMirroredPrefab;    // R
@@ -70,6 +72,10 @@ public class PipeManager : MonoBehaviour
 
         int height = rows.Length;
         int width = rows[0].Length;
+        
+        //Instantiate Background
+        Vector3 worldPos = this.transform.position + new Vector3(32f*width/2f, 23f*height/2f ,0f);
+        GameObject bg = Instantiate(background, worldPos, Quaternion.Euler(0f,0f,0f), transform);
 
         // Validate consistent row widths
         for (int i = 0; i < rows.Length; i++)

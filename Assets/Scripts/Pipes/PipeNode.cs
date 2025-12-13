@@ -19,17 +19,36 @@ namespace Pipes
 
         [SerializeField] private bool _isEnd;
 
-        private bool isOn = false;
-        
-        
-        
+        [SerializeField] private bool isOn = false;
 
+        [SerializeField] private PipeNode _next;
+        private bool _pendingState;
+
+        bool isPropagating;
+
+        void Update()
+        {
+            if (_next == null) return;
+
+            if (!isPropagating && _next.isOn != isOn)
+            {
+                isPropagating = true;
+                _pendingState = isOn;
+                Invoke(nameof(InvokeNext), 1f);
+            }
+        }
+
+        void InvokeNext()
+        {
+            _next.SwitchMode(_pendingState);
+            isPropagating = false;
+        }
 
         public void SwitchMode(bool isOn)
         {
             _on.SetActive(isOn); //when true turn on
             _off.SetActive(!isOn); //when true turn off
-
+            this.isOn = isOn;
             if (_isEnd)
             {
                 PerformAction();
@@ -43,15 +62,25 @@ namespace Pipes
 
         void OnTriggerEnter2D(Collider2D other)
         {
-            if (!this.isOn) return;
-            
-            other.GetComponent<PipeNode>().SwitchMode(true);
+            if (other.TryGetComponent<PipeNode>(out var node))
+            {
+                _next = node;
+            }
+
+            if (_next._ende == other)
+            {
+                _next = null;
+            }
         }
 
         void OnTriggerExit2D(Collider2D other)
         {
-            other.GetComponent<PipeNode>().SwitchMode(false);
+            if (other.TryGetComponent<PipeNode>(out var node))
+            {
+                _next = null;
+            }
         }
+
         
 
     }
