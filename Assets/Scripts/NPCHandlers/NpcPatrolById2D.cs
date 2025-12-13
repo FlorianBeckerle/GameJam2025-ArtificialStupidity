@@ -1,21 +1,31 @@
 using UnityEngine;
 using System.Collections.Generic;
-using System.Data;
 
+[RequireComponent(typeof(Rigidbody2D))]
 public class NpcPatrolById2D : MonoBehaviour
 {
+    [Header("Patrol")]
     [SerializeField] private int startId = 0;
     [SerializeField] private float speed = 2f;
     [SerializeField] private float reachDistance = 0.1f;
     [SerializeField] private SpriteRenderer sprite;
 
+    [Header("Obstacle Stop")]
+    [SerializeField] private LayerMask obstacleMask;   // Hindernis-Layer hier setzen
+    [SerializeField] private float stopDistance = 0.3f; // wie früh er stoppt
+    [SerializeField] private float rayOffsetY = 0.0f;   // falls nötig, leicht hoch/runter
+
     private Dictionary<int, PatrolPoint> points;
     private PatrolPoint currentTarget;
-    private bool active = true;
+    private Rigidbody2D rb;
 
+    private bool active = true;
+    private bool waitingForPlayer = false;
 
     void Awake()
     {
+        rb = GetComponent<Rigidbody2D>();
+
         var all = FindObjectsByType<PatrolPoint>(FindObjectsSortMode.None);
         points = new Dictionary<int, PatrolPoint>();
 
@@ -26,46 +36,54 @@ public class NpcPatrolById2D : MonoBehaviour
                 Debug.LogError($"Duplicate Patrolpoint ID {p.id} found on {p.gameObject.name}!", p);
                 active = false;
                 return;
-    
             }
             points.Add(p.id, p);
         }
 
-        if(!points.TryGetValue(startId, out currentTarget))
+        if (!points.TryGetValue(startId, out currentTarget))
         {
             Debug.LogError($"Starting Patrolpoint ID {startId} not found!", this);
             active = false;
             return;
         }
 
-        transform.position = currentTarget.transform.position;
+        rb.position = currentTarget.transform.position;
         AdvanceToNext();
-
     }
 
     void Update()
     {
-        if(!active || currentTarget == null) return;
+        if (!active || currentTarget == null) return;
+        if (waitingForPlayer) return;
 
-        Vector3 targetPos = currentTarget.transform.position;
-        Vector3 next = Vector3.MoveTowards(transform.position, targetPos, speed * Time.deltaTime);
-        transform.position = next;
+        Vector2 targetPos = currentTarget.transform.position;
+        Vector2 toTarget = (targetPos - rb.position);
+        Vector2 dir = toTarget.normalized;
 
-        if(Vector2.Distance(transform.position, targetPos) <= reachDistance )
+        Vector2 rayOrigin = rb.position + new Vector2(0f, rayOffsetY);
+        RaycastHit2D hit = Physics2D.Raycast(rayOrigin, dir, stopDistance, obstacleMask);
+
+        if (hit.collider != null)
         {
-            AdvanceToNext();
+            // stop und warten
+            waitingForPlayer = true;
+            rb.linearVelocity = Vector2.zero;
+            return;
         }
+
+        // bewegen
+        Vector2 next = Vector2.MoveTowards(rb.position, targetPos, speed * Time.deltaTime);
+        rb.MovePosition(next);
+
+        if (Vector2.Distance(rb.position, targetPos) <= reachDistance)
+            AdvanceToNext();
     }
 
     void AdvanceToNext()
     {
         int nextId = currentTarget.nextId;
 
-        if(nextId == -1)
-        {
-            active = false;
-            return;
-        }
+        if (nextId == -1) { active = false; return; }
 
         if (!points.TryGetValue(nextId, out var nextPoint))
         {
@@ -76,10 +94,23 @@ public class NpcPatrolById2D : MonoBehaviour
 
         if (sprite != null)
         {
-            float dx = nextPoint.transform.position.x - transform.position.x;
+            float dx = nextPoint.transform.position.x - rb.position.x;
             if (Mathf.Abs(dx) > 0.001f) sprite.flipX = (dx < 0f);
         }
 
         currentTarget = nextPoint;
+    }
+
+    public void Continue()
+    {
+        waitingForPlayer = false;
+    }
+
+    public bool IsWaiting() => waitingForPlayer;
+
+    void OnDrawGizmosSelected()
+    {
+        if (rb == null || currentTarget == null) return;
+        Gizmos.DrawLine((Vector3)rb.position, (Vector3)rb.position + (Vector3)((((Vector2)currentTarget.transform.position - rb.position).normalized) * stopDistance));
     }
 }
