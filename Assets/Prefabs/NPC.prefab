@@ -11,11 +11,17 @@ GameObject:
   - component: {fileID: 8710111484332272055}
   - component: {fileID: 747662446020200513}
   - component: {fileID: 8553118901675062883}
-  - component: {fileID: 3113870876150925623}
   - component: {fileID: 6011089228816550154}
   - component: {fileID: -5575499800862875100}
   - component: {fileID: 1265022818127594355}
   - component: {fileID: 8284060667959188928}
+  - component: {fileID: -8494600700697435154}
+  - component: {fileID: -744813077473670665}
+  - component: {fileID: 2477271245479639328}
+  - component: {fileID: 1022745488517406946}
+  - component: {fileID: 4041273623910678794}
+  - component: {fileID: 3261164376121187075}
+  - component: {fileID: 1587231686668828407}
   m_Layer: 7
   m_Name: NPC
   m_TagString: Untagged
@@ -120,31 +126,6 @@ Rigidbody2D:
   m_SleepingMode: 1
   m_CollisionDetection: 0
   m_Constraints: 4
---- !u!114 &3113870876150925623
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5489583557538147752}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 42146b465aae1d441b836e0485da52ef, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  startId: 0
-  speed: 5
-  reachDistance: 0.1
-  sprite: {fileID: 0}
-  obstacleMask:
-    serializedVersion: 2
-    m_Bits: 64
-  stopDistance: 0.6
-  rayOffsetY: 0
-  interactZone: {fileID: 1265022818127594355}
-  interactKey: 101
-  bodyCollider: {fileID: 6011089228816550154}
-  puddleKey: 102
 --- !u!70 &6011089228816550154
 CapsuleCollider2D:
   m_ObjectHideFlags: 0
@@ -254,3 +235,103 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
+--- !u!114 &-8494600700697435154
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5489583557538147752}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e04a717309bb98a48b3e785d309a9939, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  startId: 0
+  speed: 2
+  reachDistance: 0.1
+--- !u!114 &-744813077473670665
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5489583557538147752}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 40f71199583247c499a47f80c86591d6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  animator: {fileID: 8284060667959188928}
+  sprite: {fileID: 747662446020200513}
+--- !u!114 &2477271245479639328
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5489583557538147752}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4690dd2024f8d8c499783f737a1b759f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  obstacleMask:
+    serializedVersion: 2
+    m_Bits: 64
+  stopDistance: 0.6
+  rayOffsetY: 0
+--- !u!114 &1022745488517406946
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5489583557538147752}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c3da8bc46f9c34f4faed329957a977c0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  fixKey: 102
+  continueKey: 101
+  pipeMinigamePrefab: {fileID: 0}
+  uiParent: {fileID: 0}
+--- !u!114 &4041273623910678794
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5489583557538147752}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 12d5cc96c50c265448301bee6b3261bc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  interactZone: {fileID: 0}
+  bodyCollider: {fileID: 0}
+--- !u!114 &3261164376121187075
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5489583557538147752}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f061aca81fd84c44eb5de30353dea50c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &1587231686668828407
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5489583557538147752}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 040882a1db8a0fc45bc41dc49335cd2f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 

@@ -1,29 +1,40 @@
 using UnityEngine;
 
+[RequireComponent(typeof(NpcPatrolController2D))]
 public class NpcVisuals2D : MonoBehaviour
 {
     [Header("Refs")]
-    [SerializeField] private NpcPatrolById2D npc;
     [SerializeField] private Animator animator;
     [SerializeField] private SpriteRenderer sprite;
 
-    void Reset()
+    private NpcPatrolController2D npc;
+
+    void Awake()
     {
-        if (npc == null) npc = GetComponentInParent<NpcPatrolById2D>();
+        npc = GetComponent<NpcPatrolController2D>();
         if (animator == null) animator = GetComponentInChildren<Animator>();
         if (sprite == null) sprite = GetComponentInChildren<SpriteRenderer>();
+    }
+
+    void OnEnable()
+    {
+        if (npc != null) npc.OnPickupArrived += TriggerPickup;
+    }
+
+    void OnDisable()
+    {
+        if (npc != null) npc.OnPickupArrived -= TriggerPickup;
     }
 
     void Update()
     {
         if (npc == null || animator == null) return;
 
-       
-        bool falls     = npc.IsSlipped;
-        bool isTalking = npc.IsWaitingForPlayer;
+        bool falls     = npc.Slipped;
+        bool isTalking = npc.WaitingForPlayer;
         bool isWalking = npc.IsMoving;
         bool hasPaket  = npc.HasPaket;
-        bool hasError  = npc.IsShortcircuited && !falls;
+        bool hasError  = npc.Shortcircuited && !falls;
 
         if (hasError || falls)
         {
@@ -33,28 +44,12 @@ public class NpcVisuals2D : MonoBehaviour
 
         animator.SetBool("fall", falls);
         animator.SetBool("hasError", hasError);
-
         animator.SetBool("isTalking", isTalking);
         animator.SetBool("isWalking", isWalking);
         animator.SetBool("hasPaket", hasPaket);
     }
 
-    void OnEnable()
-    {
-        if (npc == null)
-            npc = GetComponentInParent<NpcPatrolById2D>();
-
-        if (npc != null)
-            npc.OnPickupArrived += TriggerPickup;
-    }
-
-    void OnDisable()
-    {
-        if (npc != null)
-            npc.OnPickupArrived -= TriggerPickup;
-    }
-
-    void TriggerPickup()
+    private void TriggerPickup()
     {
         if (animator != null)
             animator.SetTrigger("pickUp");
