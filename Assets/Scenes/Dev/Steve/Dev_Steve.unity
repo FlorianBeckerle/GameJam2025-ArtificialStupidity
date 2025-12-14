@@ -119,11 +119,6 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
---- !u!1 &5162224 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 5489583557538147752, guid: c47d201b9895be3429dc15dd68cf5e29, type: 3}
-  m_PrefabInstance: {fileID: 1201231699}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &397158421
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -316,31 +311,11 @@ CapsuleCollider2D:
   m_CorrespondingSourceObject: {fileID: 6011089228816550154, guid: c47d201b9895be3429dc15dd68cf5e29, type: 3}
   m_PrefabInstance: {fileID: 1201231699}
   m_PrefabAsset: {fileID: 0}
---- !u!95 &993779649 stripped
-Animator:
-  m_CorrespondingSourceObject: {fileID: 8284060667959188928, guid: c47d201b9895be3429dc15dd68cf5e29, type: 3}
+--- !u!58 &993779662 stripped
+CircleCollider2D:
+  m_CorrespondingSourceObject: {fileID: 1265022818127594355, guid: c47d201b9895be3429dc15dd68cf5e29, type: 3}
   m_PrefabInstance: {fileID: 1201231699}
   m_PrefabAsset: {fileID: 0}
---- !u!212 &993779654 stripped
-SpriteRenderer:
-  m_CorrespondingSourceObject: {fileID: 747662446020200513, guid: c47d201b9895be3429dc15dd68cf5e29, type: 3}
-  m_PrefabInstance: {fileID: 1201231699}
-  m_PrefabAsset: {fileID: 0}
---- !u!114 &993779656
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5162224}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 40f71199583247c499a47f80c86591d6, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  npc: {fileID: 0}
-  animator: {fileID: 993779649}
-  sprite: {fileID: 993779654}
 --- !u!1001 &1064480437
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -493,14 +468,18 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
-    - target: {fileID: 0}
-      propertyPath: startId
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 0}
+    - target: {fileID: 1022745488517406946, guid: c47d201b9895be3429dc15dd68cf5e29, type: 3}
+      propertyPath: pipeMinigamePrefab
+      value: 
+      objectReference: {fileID: 2090714308368561225, guid: 974fd5842b7f01e45a12602b731a3579, type: 3}
+    - target: {fileID: 4041273623910678794, guid: c47d201b9895be3429dc15dd68cf5e29, type: 3}
       propertyPath: bodyCollider
       value: 
       objectReference: {fileID: 993779648}
+    - target: {fileID: 4041273623910678794, guid: c47d201b9895be3429dc15dd68cf5e29, type: 3}
+      propertyPath: interactZone
+      value: 
+      objectReference: {fileID: 993779662}
     - target: {fileID: 5489583557538147752, guid: c47d201b9895be3429dc15dd68cf5e29, type: 3}
       propertyPath: m_Name
       value: NPC
@@ -552,10 +531,7 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents:
-    - targetCorrespondingSourceObject: {fileID: 5489583557538147752, guid: c47d201b9895be3429dc15dd68cf5e29, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 993779656}
+    m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: c47d201b9895be3429dc15dd68cf5e29, type: 3}
 --- !u!1 &1229222499 stripped
 GameObject:

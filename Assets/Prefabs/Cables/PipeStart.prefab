@@ -155,6 +155,7 @@ MonoBehaviour:
   _isEnd: 0
   isOn: 1
   _next: {fileID: 0}
+  clickDisabled: 1
 --- !u!50 &2485224616082815996
 Rigidbody2D:
   serializedVersion: 5

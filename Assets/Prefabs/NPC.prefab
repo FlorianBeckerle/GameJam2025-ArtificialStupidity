@@ -293,10 +293,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c3da8bc46f9c34f4faed329957a977c0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  fixKey: 102
+  startFixKey: 102
   continueKey: 101
-  pipeMinigamePrefab: {fileID: 0}
   uiParent: {fileID: 0}
+  shortcircuitMinigamePrefabs:
+  - {fileID: 2846305428584196901, guid: 974fd5842b7f01e45a12602b731a3579, type: 3}
+  - {fileID: 6199085833879324318, guid: 31b1ab866c371f94581c5bd30cfc4c8f, type: 3}
 --- !u!114 &4041273623910678794
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -309,8 +311,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 12d5cc96c50c265448301bee6b3261bc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  interactZone: {fileID: 0}
-  bodyCollider: {fileID: 0}
+  interactZone: {fileID: 1265022818127594355}
+  bodyCollider: {fileID: 6011089228816550154}
 --- !u!114 &3261164376121187075
 MonoBehaviour:
   m_ObjectHideFlags: 0

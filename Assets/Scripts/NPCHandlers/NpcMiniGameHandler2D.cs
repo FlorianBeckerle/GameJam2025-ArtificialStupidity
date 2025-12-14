@@ -3,27 +3,22 @@ using UnityEngine;
 [RequireComponent(typeof(NpcPatrolController2D))]
 public class NpcMinigameHandler2D : MonoBehaviour
 {
-    // -------------------------
-    // Keys
-    // -------------------------
-    [Header("Interaction Keys")]
-    [SerializeField] private KeyCode fixKey = KeyCode.F;      // Minigame starten / fixen
-    [SerializeField] private KeyCode continueKey = KeyCode.E; // Ohne Minigame weiterlaufen
+    [Header("Keys")]
+    [SerializeField] private KeyCode startFixKey = KeyCode.F;      // Minigame starten
+    [SerializeField] private KeyCode continueKey = KeyCode.E;      // nur für non-shortcircuit waits
 
-    // -------------------------
-    // Minigames
-    // -------------------------
-    [Header("Minigames")]
-    [SerializeField] private PipeManager pipeMinigamePrefab;
+    [Header("UI Parent")]
     [SerializeField] private Transform uiParent;
 
-    private NpcPatrolController2D npc;
-    private PipeManager activePipeMinigame;
-    private bool minigameRunning;
+    [Header("Shortcircuit Minigames (random)")]
+    [SerializeField] private GameObject[] shortcircuitMinigamePrefabs;
 
-    // -------------------------
-    // Unity
-    // -------------------------
+    private NpcPatrolController2D npc;
+
+    private INpcMinigame activeMinigame;
+    private GameObject activeGO;
+    private bool running;
+
     void Awake()
     {
         npc = GetComponent<NpcPatrolController2D>();
@@ -32,69 +27,98 @@ public class NpcMinigameHandler2D : MonoBehaviour
     void Update()
     {
         if (npc == null || !npc.Active) return;
-        if (!npc.WaitingForPlayer) return;
-        if (!npc.PlayerInZone) return;
 
-        // Kurzschluss → Minigame
+        // nur wenn NPC wartet + Player in Range
+        if (!npc.WaitingForPlayer || !npc.PlayerInZone) return;
+
+        // SHORTCIRCUIT => random Minigame starten
         if (npc.Shortcircuited)
         {
-            if (!minigameRunning && Input.GetKeyDown(fixKey))
-            {
-                StartPipeMinigame();
-            }
+            if (!running && Input.GetKeyDown(startFixKey))
+                StartRandomShortcircuitMinigame();
+
             return;
         }
 
-        // Andere Wartezustände (Obstacle / Oil)
+        // andere Wait States (Obstacle / Oil) => optional weiter mit E
         if (Input.GetKeyDown(continueKey))
-        {
             npc.ReleaseAndContinue();
-        }
     }
 
-    // -------------------------
-    // Pipe Minigame
-    // -------------------------
-    private void StartPipeMinigame()
+    private void StartRandomShortcircuitMinigame()
     {
-        if (pipeMinigamePrefab == null)
+        if (shortcircuitMinigamePrefabs == null || shortcircuitMinigamePrefabs.Length == 0)
         {
-            Debug.LogWarning("No Pipe Minigame prefab assigned!", this);
+            Debug.LogWarning("No shortcircuit minigame prefabs assigned!", this);
             return;
         }
 
-        if (activePipeMinigame != null) return;
+        if (activeGO != null) return;
 
-        minigameRunning = true;
+        // Random wählen
+        int idx = Random.Range(0, shortcircuitMinigamePrefabs.Length);
+        GameObject prefab = shortcircuitMinigamePrefabs[idx];
 
-        activePipeMinigame = Instantiate(pipeMinigamePrefab, uiParent);
-        activePipeMinigame.Solved += OnPipeSolved;
-        activePipeMinigame.Failed += OnPipeFailed;
+        if (prefab == null)
+        {
+            Debug.LogWarning($"Shortcircuit minigame prefab at index {idx} is null!", this);
+            return;
+        }
+
+        StartMinigame(prefab);
     }
 
-    private void OnPipeSolved()
+    private void StartMinigame(GameObject prefab)
     {
-        CleanupPipeMinigame();
+        running = true;
+
+        activeGO = Instantiate(prefab, uiParent);
+        activeMinigame = activeGO.GetComponentInChildren<INpcMinigame>();
+
+        if (activeMinigame == null)
+        {
+            Debug.LogError($"Prefab '{prefab.name}' has no component implementing INpcMinigame.", this);
+            Destroy(activeGO);
+            activeGO = null;
+            running = false;
+            return;
+        }
+
+        activeMinigame.Solved += OnSolved;
+        activeMinigame.Failed += OnFailed;
+        activeMinigame.Begin();
+    }
+
+    private void OnSolved()
+    {
+        Cleanup();
 
         npc.Shortcircuited = false;
         npc.ReleaseAndContinue();
-
-        minigameRunning = false;
     }
 
-    private void OnPipeFailed()
+    private void OnFailed()
     {
-        // NPC bleibt im Fehlerzustand
-        minigameRunning = false;
+        // NPC bleibt shortcircuited, Player kann erneut F drücken
+        Cleanup(keepNpcWaiting: true);
     }
 
-    private void CleanupPipeMinigame()
+    private void Cleanup(bool keepNpcWaiting = false)
     {
-        if (activePipeMinigame == null) return;
+        if (activeMinigame != null)
+        {
+            activeMinigame.Solved -= OnSolved;
+            activeMinigame.Failed -= OnFailed;
+        }
 
-        activePipeMinigame.Solved -= OnPipeSolved;
-        activePipeMinigame.Failed -= OnPipeFailed;
-        Destroy(activePipeMinigame.gameObject);
-        activePipeMinigame = null;
+        if (activeGO != null)
+            Destroy(activeGO);
+
+        activeMinigame = null;
+        activeGO = null;
+        running = false;
+
+        if (!keepNpcWaiting)
+            npc.SetWaiting(false);
     }
 }
