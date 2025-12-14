@@ -13,6 +13,8 @@ public class LevelSectionEndTrigger : MonoBehaviour
     void OnTriggerEnter2D(Collider2D other)
     {
         if (!other.CompareTag(playerTag)) return;
+        if (adapter == null || !adapter.TriggersArmed) return;
         adapter.Complete();
+
     }
 }
