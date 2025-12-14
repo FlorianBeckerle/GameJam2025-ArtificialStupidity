@@ -2,37 +2,59 @@ using UnityEngine;
 
 public class AudioManager : MonoBehaviour
 {
-    public AudioSource BackgroundMusic;
-    public AudioSource MiniGameMusic;
-    public AudioSource MiniGameMusic2;
-    public AudioSource MiniGameMusic3;
-    public AudioSource SoundEffects;
+    public static AudioManager Instance;
 
+    [Header("Sources")]
+    public AudioSource musicSource;
+    public AudioSource sfxSource;
+
+    [Header("Music Clips")]
+    public AudioClip backgroundMusic;
+    public AudioClip[] minigameMusic;
 
     void Awake()
     {
+        if (Instance != null)
+        {
+            Destroy(gameObject);
+            return;
+        }
+
+        Instance = this;
         DontDestroyOnLoad(gameObject);
     }
 
-    public void PlayBackgroundMusic(AudioClip clip)
+    void Start()
     {
-        MiniGameMusic.Stop();
-        BackgroundMusic.clip = clip;
-        BackgroundMusic.loop = true;
-        BackgroundMusic.Play();
+        PlayBackgroundMusic();
     }
 
-
-    public void PlayMiniGameMusic(AudioClip clip)
+    // 🎵 Background Music
+    public void PlayBackgroundMusic()
     {
-        BackgroundMusic.Stop();
-        MiniGameMusic.clip = clip;
-        MiniGameMusic.loop = true;
-        MiniGameMusic.Play();
+        PlayMusic(backgroundMusic);
     }
 
-    public void PlaySoundeffects(AudioClip clip)
+    // 🎮 Minigame Music
+    public void PlayMinigameMusic(int index)
     {
-        SoundEffects.PlayOneShot(clip);
+        if (index < 0 || index >= minigameMusic.Length) return;
+        PlayMusic(minigameMusic[index]);
+    }
+
+    void PlayMusic(AudioClip clip)
+    {
+        if (musicSource.clip == clip) return;
+
+        musicSource.Stop();
+        musicSource.clip = clip;
+        musicSource.loop = true;
+        musicSource.Play();
+    }
+
+    // 🔊 Sound Effects
+    public void PlaySFX(AudioClip clip)
+    {
+        sfxSource.PlayOneShot(clip);
     }
 }
