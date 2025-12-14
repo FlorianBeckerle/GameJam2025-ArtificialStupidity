@@ -109,6 +109,7 @@ MonoBehaviour:
   _isEnd: 1
   isOn: 0
   _next: {fileID: 0}
+  clickDisabled: 1
 --- !u!61 &8610280351563662269
 BoxCollider2D:
   m_ObjectHideFlags: 0

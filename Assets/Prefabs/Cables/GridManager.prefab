@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 1801643500718850972}
   - component: {fileID: 5712807966912445850}
   - component: {fileID: 2090714308368561225}
+  - component: {fileID: -7786952185848654686}
   m_Layer: 0
   m_Name: GridManager
   m_TagString: Untagged
@@ -116,6 +117,19 @@ MonoBehaviour:
     00000000000000'
   clearChildrenBeforeGenerate: 1
   generateOnStart: 1
+--- !u!114 &-7786952185848654686
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2846305428584196901}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 043426d30b236b446b83c7c0fd5fbd06, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  pipe: {fileID: 2090714308368561225}
 --- !u!1 &8548494324660938210
 GameObject:
   m_ObjectHideFlags: 0
