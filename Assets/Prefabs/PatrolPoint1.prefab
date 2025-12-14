@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 7934873173509911678}
   - component: {fileID: 7997701590914576776}
   - component: {fileID: 3936206963388908430}
+  - component: {fileID: -7461485073901214417}
   m_Layer: 0
   m_Name: PatrolPoint1
   m_TagString: Untagged
@@ -102,3 +103,17 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   id: 0
   nextId: 1
+--- !u!114 &-7461485073901214417
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5453072868110783594}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 509f05901954af84080ecd9c0cac074c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _spriteRenderer: {fileID: 0}
+  sortingMultiplier: 1000

@@ -15,6 +15,7 @@ public class NpcPatrolById2D : MonoBehaviour
     [SerializeField] private LayerMask obstacleMask;
     [SerializeField] private float stopDistance = 0.3f;
     [SerializeField] private float rayOffsetY = 0.0f;
+    [SerializeField] private Collider2D interactZone;
 
     [Header("Player Interaction")]
     [SerializeField] private KeyCode interactKey = KeyCode.E;
@@ -30,6 +31,12 @@ public class NpcPatrolById2D : MonoBehaviour
 
     void Awake()
     {
+        if(interactZone != null) interactZone.enabled = false;
+
+        playerInZone = false;
+        waitingForPlayer = false;
+
+
         rb = GetComponent<Rigidbody2D>();
 
         var all = FindObjectsByType<PatrolPoint>(FindObjectsSortMode.None);
@@ -72,8 +79,16 @@ public class NpcPatrolById2D : MonoBehaviour
             if (playerInZone && Input.GetKeyDown(interactKey))
             {
                 waitingForPlayer = false;
-                ignoreObstacleUntil = Time.time + 0.25f; // kurz Hindernisse ignorieren
+                ignoreObstacleUntil = Time.time + 0.25f;
+
+                // ⭐ InteractZone wieder AUS
+                if (interactZone != null)
+                    interactZone.enabled = false;
+
+                // optional sauber zurücksetzen
+                playerInZone = false;
             }
+
             return;
         }
 
@@ -88,6 +103,7 @@ public class NpcPatrolById2D : MonoBehaviour
             {
                 waitingForPlayer = true;
                 rb.linearVelocity = Vector2.zero;
+                if(interactZone != null) interactZone.enabled = true;
                 return;
             }
         }
@@ -137,19 +153,22 @@ public class NpcPatrolById2D : MonoBehaviour
 
     public void OnZoneEnter(Collider2D other)
     {
-        if (other.CompareTag("Player"))
-            playerInZone = true;
+        if (!other.CompareTag("Player")) return;
+        playerInZone = true;
+        Debug.Log("PLAYER entered NPC zone", this);
     }
 
     public void OnZoneExit(Collider2D other)
     {
-        if (other.CompareTag("Player"))
-            playerInZone = false;
+        if (!other.CompareTag("Player")) return;
+        playerInZone = false;
+        Debug.Log("PLAYER exited NPC zone", this);
     }
 
     public void OnZoneStay(Collider2D other)
     {
-        if (other.CompareTag("Player"))
-            playerInZone = true;
+        if (!other.CompareTag("Player")) return;
+        playerInZone = true;
+        Debug.Log("PLAYER staying in NPC zone", this);
     }
 }
