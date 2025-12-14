@@ -55,7 +55,7 @@ public class MovementClassic : MonoBehaviour, IMovement
 
             // Horizontal target speed from input.x
             //float targetX = input.Move.x * baseSpeed;
-            currentSpeed = Mathf.Lerp(currentSpeed, baseSpeed, Time.deltaTime * tuning.rampUpSpeed);
+            currentSpeed = Mathf.Lerp(currentSpeed, baseSpeed, dt * tuning.rampUpSpeed);
             //float targetX = input.Move.x * currentSpeed;
             float targetX = input.Move.x == 0 ? 0 : Mathf.Sign(input.Move.x);
             targetX *= currentSpeed;
