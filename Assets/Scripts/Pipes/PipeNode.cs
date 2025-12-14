@@ -1,4 +1,5 @@
-﻿using Mono.Cecil.Cil;
+﻿using System.Collections;
+using Mono.Cecil.Cil;
 using UnityEngine;
 
 namespace Pipes
@@ -23,6 +24,8 @@ namespace Pipes
 
         [SerializeField] private PipeNode _next;
         private bool _pendingState;
+
+        private bool clickDisabled = false;
 
         void Update()
         {
@@ -91,7 +94,10 @@ namespace Pipes
 
         private void OnMouseDown()
         {
+            if (clickDisabled) return;
+            
             RotatePipe();
+            StartCoroutine(DisableClick());
         }
 
         private void RotatePipe()
@@ -99,6 +105,13 @@ namespace Pipes
             float z = transform.eulerAngles.z;
             z = (z - 90f) % 360f;
             transform.rotation = Quaternion.Euler(0f, 0f, z);
+        }
+
+        private IEnumerator DisableClick()
+        {
+            this.clickDisabled = true;
+            yield return new WaitForSecondsRealtime(0.5f);
+            this.clickDisabled = false;
         }
 
     }
