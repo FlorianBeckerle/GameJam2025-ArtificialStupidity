@@ -24,6 +24,7 @@ namespace Pipes
 
         [SerializeField] private PipeNode _next;
         private bool _pendingState;
+        private PipeNode lastNext;
 
 [SerializeField]
         private bool clickDisabled = false;
@@ -32,18 +33,29 @@ namespace Pipes
         {
             if (_next == null) return;
             
-
-            if (!_pendingState != _next.isOn)
+            //if state still needs to be changed
+            if (_pendingState || isOn != _next.isOn)
             {
                 
-                _pendingState = isOn;
                 Invoke(nameof(InvokeNext), 0.2f);
             }
+            
+            //Disable Script if aready in right place and next has been activated
+            if(isOn && _next.isOn) this.enabled = false;
         }
 
         void InvokeNext()
         {
-            _next.SwitchMode(_pendingState);
+            if (isOn)
+            {
+                _next.SwitchMode(isOn);    
+            }
+            else
+            {
+                if (lastNext == null) return;
+                lastNext.SwitchMode(isOn);
+                lastNext = null;
+            }
             _pendingState = false;
         }
 
@@ -87,7 +99,9 @@ namespace Pipes
                 if (node._ende != other)
                 {
 
-                    _next = node;
+                    _next = node; //set current node
+                    _pendingState = true; //set buffer to true
+                    lastNext = node; //set buffer for next
                 }
 
             }
@@ -99,15 +113,20 @@ namespace Pipes
             if (other is CircleCollider2D)
                 return;
             
+            //Get other collider
             if (other.TryGetComponent<PipeNode>(out var node))
             {
+                //Set deactivate next
+                _pendingState = true;
+                //clear next
                 _next = null;
             }
         }
 
         private void OnMouseDown()
         {
-            if (clickDisabled) return;
+            //If clickDIsabled or script is thisabled skip
+            if (clickDisabled || !this.enabled) return;
             
             RotatePipe();
             StartCoroutine(DisableClick());
