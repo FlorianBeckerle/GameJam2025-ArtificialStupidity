@@ -49,8 +49,16 @@ public class NpcPatrolById2D : MonoBehaviour
     // -------------------------
     [Header("Water Puddle (shortcircuit)")]
     [SerializeField] private KeyCode puddleKey = KeyCode.F;   // Placeholder "Minigame bestanden"
+
+    [Header("Minigame")]
+    [SerializeField] private PipeManager pipeMinigamePrefab;    // Pipe Minigame Prefab zum Instantiieren
+    [SerializeField] private Transform uiParent;
+    [SerializeField] private float flipEpsilonX = 0.02f;
+    private bool facingLeft = false;
+    private PipeManager activeMinigame;
     private bool shortcircuited = false;                       // NPC ist kurzgeschlossen und wartet auf Fix
 
+    private bool minigameStarted = false;
     private bool slipped = false;                            // NPC ist in Oil ausgerutscht
     // -------------------------
     // Internals
@@ -191,9 +199,20 @@ public class NpcPatrolById2D : MonoBehaviour
         if (waitingForPlayer)
         {
 
+
             Debug.Log($"WAITING | playerInZone={playerInZone}", this);
 
             rb.linearVelocity = Vector2.zero;
+            if (shortcircuited)
+            {
+                if(playerInZone && !minigameStarted && Input.GetKeyDown(puddleKey))
+                {
+                    
+                    minigameStarted = true;
+                    StartPipeMinigame();
+                }
+                return;
+            }
 
             KeyCode key = (shortcircuited || slipped) ? puddleKey : interactKey;
 
@@ -218,8 +237,6 @@ public class NpcPatrolById2D : MonoBehaviour
 
                 // Nähezustand zurücksetzen
                 playerInZone = false;
-
-                shortcircuited = false;
                 slipped = false;
             }
 
@@ -231,6 +248,7 @@ public class NpcPatrolById2D : MonoBehaviour
         // 4) Normaler Patrol-Mode: zum currentTarget laufen
         // -------------------------
         Vector2 targetPos = currentTarget.transform.position;
+        UpdateFacing(targetPos);
         Vector2 dir = (targetPos - rb.position).normalized;
 
         // 4a) Obstacle Raycast: nur gegen obstacleMask
@@ -309,12 +327,6 @@ public class NpcPatrolById2D : MonoBehaviour
             return;
         }
 
-        if (sprite != null)
-        {
-            float dx = nextPoint.transform.position.x - rb.position.x;
-            if (Mathf.Abs(dx) > 0.001f)
-                sprite.flipX = (dx < 0f);
-        }
 
         currentTarget = nextPoint;
     }
@@ -373,15 +385,25 @@ public class NpcPatrolById2D : MonoBehaviour
     // Unity Trigger: ein Trigger-Collider am NPC (z.B. Circle) berührt einen anderen Collider
     void OnTriggerEnter2D(Collider2D other)
     {
+        minigameStarted = false;
         // 1) PUDDLE: NPC läuft in Hazard rein (Trigger auf dem Puddle)
         if (other.CompareTag("Puddle"))
         {
             shortcircuited = true;
+            slipped = false;
+
+            waitingForPlayer = true;
+            minigameStarted = false;
+
             rb.linearVelocity = Vector2.zero;
 
             // InteractZone aktivieren, damit Player zum Fixen in die Nähe gehen kann
             if (interactZone != null)
                 interactZone.enabled = true;
+
+
+
+            
 
             // Puddle "verbrauchen": verschwindet sofort
             Destroy(other.gameObject);
@@ -446,6 +468,77 @@ public class NpcPatrolById2D : MonoBehaviour
             hasPaket = false;
             // optional: eigenes Event/Trigger für DropOff
         }
+    }
+
+    private void StartPipeMinigame()
+    {
+        if (pipeMinigamePrefab == null)
+        {
+            Debug.LogWarning("No Pipe Minigame Prefab assigned!", this);
+            return;
+        }
+
+        if (activeMinigame != null)
+        {
+            Debug.LogWarning("Pipe Minigame already active!", this);
+            return;
+        }
+
+        var parent = uiParent != null ? uiParent : null;
+
+        activeMinigame = Instantiate(pipeMinigamePrefab, parent);
+        activeMinigame.Solved += OnMinigameSolved;
+        activeMinigame.Failed += OnMinigameFailed;
+
+        Debug.Log("Pipe Minigame started.", this);
+    }
+
+    private void OnMinigameSolved()
+    {
+        CleanupMinigame();
+
+        shortcircuited = false;
+        waitingForPlayer = false;
+        ignoreObstacleUntil = Time.time + 0.25f;
+
+        if(interactZone != null) interactZone.enabled = false;
+        playerInZone = false;
+
+        Debug.Log("Pipe Minigame solved. NPC fixed.", this);
+    }
+
+    private void OnMinigameFailed()
+    {
+        minigameStarted = false;
+        // NPC bleibt kurzgeschlossen, Player muss es nochmal versuchen
+        Debug.Log("Pipe Minigame failed. NPC remains shortcircuited.", this);
+    }
+
+    private void CleanupMinigame()
+    {
+        if (activeMinigame == null) return;
+
+        activeMinigame.Solved -= OnMinigameSolved;
+        activeMinigame.Failed -= OnMinigameFailed;
+        activeMinigame = null;
+    }
+
+    private void UpdateFacing(Vector2 targetPos)
+    {
+        if (sprite == null) return;
+
+        float dx = targetPos.x - rb.position.x;
+
+        if(dx > flipEpsilonX)
+        {
+            facingLeft = false;
+        }
+        else if(dx < -flipEpsilonX)
+        {
+            facingLeft = true;
+        }
+
+        sprite.flipX = facingLeft;
     }
 
 
