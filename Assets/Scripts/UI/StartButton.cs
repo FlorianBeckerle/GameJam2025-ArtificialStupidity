@@ -1,18 +1,18 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-public class StartButton : MonoBehaviour, IButton
+public class StartButton : MonoBehaviour
 {
+    [SerializeField]
+    private string toLoad;
 
-    public Scene toLoad;
-
-    public void OnMouseDown()
+    private void OnMouseDown()
     {
         PerformAction();
     }
 
     public void PerformAction()
     {
-        SceneManager.LoadScene(toLoad.name);
+        SceneManager.LoadScene(toLoad);
     }
 }
