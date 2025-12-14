@@ -48,6 +48,11 @@ public class PipeManager : MonoBehaviour
     [Header("Options")]
     [SerializeField] private bool clearChildrenBeforeGenerate = true;
     [SerializeField] private bool generateOnStart = true;
+
+    public event System.Action Solved;
+    public event System.Action Failed;
+
+    private bool _closed = false;
     void Awake()
     {
         if (!grid) grid = GetComponent<Grid>();
@@ -60,6 +65,16 @@ public class PipeManager : MonoBehaviour
         
         
     }
+
+    public void Solve()
+    {
+        if (_closed) return;
+        _closed = true;
+        
+        Solved?.Invoke();
+        Close();
+    }
+    
 
     [ContextMenu("Generate From Layout")]
     public void GenerateFromLayout()
@@ -213,11 +228,15 @@ public class PipeManager : MonoBehaviour
             yield return null; // wait 1 frame
         }
 
+        Failed?.Invoke();
+
         Close();
     }
 
     private void Close()
     {
+        if (_closed) {Destroy(gameObject); return;}
+        _closed = true;
         Destroy(this.gameObject);
     }
     

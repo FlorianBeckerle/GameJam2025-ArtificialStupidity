@@ -25,6 +25,7 @@ namespace Pipes
         [SerializeField] private PipeNode _next;
         private bool _pendingState;
 
+[SerializeField]
         private bool clickDisabled = false;
 
         void Update()
@@ -63,7 +64,15 @@ namespace Pipes
 
         private void PerformAction()
         {
-            Debug.Log($"Node: {nodePosition}, reached Goal!");
+            if (!isOn) return;
+
+            var manager = GetComponentInParent<PipeManager>();
+            if (manager != null)
+            {
+                manager.Solve();
+            }
+
+
         }
 
         void OnTriggerEnter2D(Collider2D other)

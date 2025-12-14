@@ -49,13 +49,22 @@ public class NpcPatrolById2D : MonoBehaviour
     // -------------------------
     [Header("Water Puddle (shortcircuit)")]
     [SerializeField] private KeyCode puddleKey = KeyCode.F;   // Placeholder "Minigame bestanden"
+
+    [Header("Minigame")]
+    [SerializeField] private PipeManager pipeMinigamePrefab;    // Pipe Minigame Prefab zum Instantiieren
+    [SerializeField] private Transform uiParent;
+    [SerializeField] private float flipEpsilonX = 0.02f;
+    private bool facingLeft = false;
+    private PipeManager activeMinigame;
     private bool shortcircuited = false;                       // NPC ist kurzgeschlossen und wartet auf Fix
 
+    private bool minigameStarted = false;
     private bool slipped = false;                            // NPC ist in Oil ausgerutscht
     // -------------------------
     // Internals
     // -------------------------
     private Dictionary<int, PatrolPoint> points;          // Alle PatrolPoints nach ID
+    private Dictionary<int,int> prevMap = new Dictionary<int,int>(); // Map von nextId zu prevId
     private PatrolPoint currentTarget;                    // Aktuelles Ziel (der Punkt, zu dem gelaufen wird)
     private Rigidbody2D rb;
 
@@ -63,6 +72,38 @@ public class NpcPatrolById2D : MonoBehaviour
     private bool waitingForPlayer = false;                // Wartet der NPC wegen Obstacle auf Player (E)?
     private bool playerInZone = false;                    // Player ist in InteractZone (Circle Trigger)
     private float ignoreObstacleUntil = 0f;               // Kurz Obstacles ignorieren (damit er nach "E/F" nicht sofort wieder stoppt)
+
+    private bool hasPaket = false;                            // NPC hat ein Paket (für Visuals)
+
+    public event System.Action OnPickupArrived;
+
+    private bool returnAfterFix = false;
+
+    private bool returningToPickup = false;
+
+    public bool HasPaket => hasPaket;
+
+    public bool IsSlipped => slipped;
+
+    public bool IsShortcircuited => shortcircuited;
+    public bool IsWaitingForPlayer => waitingForPlayer;
+    public bool IsMoving => active && !waitingForPlayer && !shortcircuited && !slipped;
+
+    public bool isAfterDropOffPoint => currentTarget != null && currentTarget.isDropOffPoint;
+
+    public bool isAtPickupPoint => currentTarget != null && currentTarget.isPickupPoint;
+
+    public Vector2 CurrentTargetPos => currentTarget != null ? (Vector2)currentTarget.transform.position : rb.position;
+
+    public Vector2 MoveDirection
+    {
+        get
+        {
+            if (currentTarget == null) return Vector2.zero;
+            Vector2 dir = ((Vector2)currentTarget.transform.position - rb.position);
+            return dir.sqrMagnitude > 0.0001f ? dir.normalized : Vector2.zero;
+        }
+    }
 
     void Awake()
     {
@@ -104,13 +145,41 @@ public class NpcPatrolById2D : MonoBehaviour
             return;
         }
 
+        if (currentTarget.isPickupPoint)
+        {
+            hasPaket = true;
+            OnPickupArrived?.Invoke(); // 1x Trigger für HookDown/HookUp
+        }
+
+        //PickupPoint 
+        if (currentTarget.isPickupPoint)
+        {
+            Debug.Log("Starting point is a Pickup Point.", this);
+        }
+
+        //DropOff Point initial check
+        if (currentTarget.isDropOffPoint)
+        {
+            Debug.Log("Starting point is a DropOff Point, advancing to next point.", this);
+        }
+
         // NPC auf Startpunkt setzen und direkt zum nächsten Ziel wechseln
         rb.position = currentTarget.transform.position;
         AdvanceToNext();
+        prevMap.Clear();
+        foreach (var kvp in points)
+        {
+            int id = kvp.Key;
+            int next = kvp.Value.nextId;
+            if (next != -1)
+                prevMap[next] = id;
+        }
     }
 
-    void Update()
+    void Update()    
     {
+
+
         // -------------------------
         // 1) Kurzschluss-Zustand: NPC steht und wartet auf "Fix" (Key F)
         // -------------------------
@@ -129,14 +198,35 @@ public class NpcPatrolById2D : MonoBehaviour
         // -------------------------
         if (waitingForPlayer)
         {
+
+
             Debug.Log($"WAITING | playerInZone={playerInZone}", this);
 
             rb.linearVelocity = Vector2.zero;
+            if (shortcircuited)
+            {
+                if(playerInZone && !minigameStarted && Input.GetKeyDown(puddleKey))
+                {
+                    
+                    minigameStarted = true;
+                    StartPipeMinigame();
+                }
+                return;
+            }
+
+            KeyCode key = (shortcircuited || slipped) ? puddleKey : interactKey;
 
             // Player muss in InteractZone sein UND E drücken
-            if (playerInZone && Input.GetKeyDown(interactKey))
+            if (playerInZone && Input.GetKeyDown(key))
             {
                 waitingForPlayer = false;
+
+                if (returnAfterFix)
+                {
+                    returningToPickup = true;   // jetzt erst loslaufen
+                    returnAfterFix = false;
+                }
+
 
                 // Kurz Obstacles ignorieren, damit er nach dem "Go" nicht sofort wieder stoppt
                 ignoreObstacleUntil = Time.time + 0.25f;
@@ -147,8 +237,7 @@ public class NpcPatrolById2D : MonoBehaviour
 
                 // Nähezustand zurücksetzen
                 playerInZone = false;
-
-                shortcircuited = false;
+                slipped = false;
             }
 
             // In Wartestatus nicht weiter patrouillieren
@@ -159,6 +248,7 @@ public class NpcPatrolById2D : MonoBehaviour
         // 4) Normaler Patrol-Mode: zum currentTarget laufen
         // -------------------------
         Vector2 targetPos = currentTarget.transform.position;
+        UpdateFacing(targetPos);
         Vector2 dir = (targetPos - rb.position).normalized;
 
         // 4a) Obstacle Raycast: nur gegen obstacleMask
@@ -187,23 +277,49 @@ public class NpcPatrolById2D : MonoBehaviour
         rb.MovePosition(next);
 
         // 4c) Ziel erreicht -> nächsten PatrolPoint setzen
-        if (Vector2.Distance(rb.position, targetPos) <= reachDistance)
+       if (Vector2.Distance(rb.position, targetPos) <= reachDistance)
+        {
+            HandlePointArrival(currentTarget);
             AdvanceToNext();
+        }
+
     }
 
     // Wechselt currentTarget auf den nächsten PatrolPoint in der Kette
     void AdvanceToNext()
     {
-        int nextId = currentTarget.nextId;
+        int nextId;
 
-        // -1 bedeutet "Ende"
+        if (returningToPickup)
+        {
+            // Wenn aktueller Punkt schon Pickup ist -> Reverse beenden und normal weiter
+            if (currentTarget != null && currentTarget.isPickupPoint)
+            {
+                returningToPickup = false;
+                nextId = currentTarget.nextId;
+            }
+            else
+            {
+                // rückwärts: Vorgänger holen
+                if (!prevMap.TryGetValue(currentTarget.id, out nextId))
+                {
+                    Debug.LogWarning("No previous point found - stop reverse.", this);
+                    returningToPickup = false;
+                    nextId = currentTarget.nextId;
+                }
+            }
+        }
+        else
+        {
+            nextId = currentTarget.nextId;
+        }
+
         if (nextId == -1)
         {
             active = false;
             return;
         }
 
-        // nächsten PatrolPoint holen
         if (!points.TryGetValue(nextId, out var nextPoint))
         {
             Debug.LogError($"Next Patrolpoint ID {nextId} not found!", this);
@@ -211,16 +327,10 @@ public class NpcPatrolById2D : MonoBehaviour
             return;
         }
 
-        // Sprite Flip links/rechts je nach Richtung
-        if (sprite != null)
-        {
-            float dx = nextPoint.transform.position.x - rb.position.x;
-            if (Mathf.Abs(dx) > 0.001f)
-                sprite.flipX = (dx < 0f);
-        }
 
         currentTarget = nextPoint;
     }
+
 
     // Nur zum Debug: zeigt Raycast-Linie im Scene View wenn Objekt ausgewählt ist
     void OnDrawGizmosSelected()
@@ -275,15 +385,25 @@ public class NpcPatrolById2D : MonoBehaviour
     // Unity Trigger: ein Trigger-Collider am NPC (z.B. Circle) berührt einen anderen Collider
     void OnTriggerEnter2D(Collider2D other)
     {
+        minigameStarted = false;
         // 1) PUDDLE: NPC läuft in Hazard rein (Trigger auf dem Puddle)
         if (other.CompareTag("Puddle"))
         {
             shortcircuited = true;
+            slipped = false;
+
+            waitingForPlayer = true;
+            minigameStarted = false;
+
             rb.linearVelocity = Vector2.zero;
 
             // InteractZone aktivieren, damit Player zum Fixen in die Nähe gehen kann
             if (interactZone != null)
                 interactZone.enabled = true;
+
+
+
+            
 
             // Puddle "verbrauchen": verschwindet sofort
             Destroy(other.gameObject);
@@ -302,11 +422,17 @@ public class NpcPatrolById2D : MonoBehaviour
         if (other.CompareTag("Oil"))
         {
             slipped = true;
+            shortcircuited = false;
+
+            returnAfterFix = true;
+            waitingForPlayer = true;
             rb.linearVelocity = Vector2.zero;
 
             // InteractZone aktivieren, damit Player zum Fixen in die Nähe gehen kann
             if (interactZone != null)
                 interactZone.enabled = true;
+
+            Destroy(other.gameObject);
 
             Debug.Log("NPC slipped on oil!", this);
             return;
@@ -326,4 +452,96 @@ public class NpcPatrolById2D : MonoBehaviour
         if (other.CompareTag("Player"))
             OnZoneExit(other);
     }
+
+    void HandlePointArrival(PatrolPoint point)
+    {
+        if (point == null) return;
+
+        if (point.isPickupPoint)
+        {
+            hasPaket = true;
+            OnPickupArrived?.Invoke(); // 1x Trigger für HookDown/HookUp
+        }
+
+        if (point.isDropOffPoint)
+        {
+            hasPaket = false;
+            // optional: eigenes Event/Trigger für DropOff
+        }
+    }
+
+    private void StartPipeMinigame()
+    {
+        if (pipeMinigamePrefab == null)
+        {
+            Debug.LogWarning("No Pipe Minigame Prefab assigned!", this);
+            return;
+        }
+
+        if (activeMinigame != null)
+        {
+            Debug.LogWarning("Pipe Minigame already active!", this);
+            return;
+        }
+
+        var parent = uiParent != null ? uiParent : null;
+
+        activeMinigame = Instantiate(pipeMinigamePrefab, parent);
+        activeMinigame.Solved += OnMinigameSolved;
+        activeMinigame.Failed += OnMinigameFailed;
+
+        Debug.Log("Pipe Minigame started.", this);
+    }
+
+    private void OnMinigameSolved()
+    {
+        CleanupMinigame();
+
+        shortcircuited = false;
+        waitingForPlayer = false;
+        ignoreObstacleUntil = Time.time + 0.25f;
+
+        if(interactZone != null) interactZone.enabled = false;
+        playerInZone = false;
+
+        Debug.Log("Pipe Minigame solved. NPC fixed.", this);
+    }
+
+    private void OnMinigameFailed()
+    {
+        minigameStarted = false;
+        // NPC bleibt kurzgeschlossen, Player muss es nochmal versuchen
+        Debug.Log("Pipe Minigame failed. NPC remains shortcircuited.", this);
+    }
+
+    private void CleanupMinigame()
+    {
+        if (activeMinigame == null) return;
+
+        activeMinigame.Solved -= OnMinigameSolved;
+        activeMinigame.Failed -= OnMinigameFailed;
+        activeMinigame = null;
+    }
+
+    private void UpdateFacing(Vector2 targetPos)
+    {
+        if (sprite == null) return;
+
+        float dx = targetPos.x - rb.position.x;
+
+        if(dx > flipEpsilonX)
+        {
+            facingLeft = false;
+        }
+        else if(dx < -flipEpsilonX)
+        {
+            facingLeft = true;
+        }
+
+        sprite.flipX = facingLeft;
+    }
+
+
+
+
 }
