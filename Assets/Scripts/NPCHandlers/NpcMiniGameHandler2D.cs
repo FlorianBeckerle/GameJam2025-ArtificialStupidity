@@ -4,8 +4,8 @@ using UnityEngine;
 public class NpcMinigameHandler2D : MonoBehaviour
 {
     [Header("Keys")]
-    [SerializeField] private KeyCode startFixKey = KeyCode.F;      // Minigame starten
-    [SerializeField] private KeyCode continueKey = KeyCode.E;      // nur für non-shortcircuit waits
+    [SerializeField] private KeyCode startFixKey = KeyCode.F;
+    [SerializeField] private KeyCode continueKey = KeyCode.E;
 
     [Header("UI Parent")]
     [SerializeField] private Transform uiParent;
@@ -13,7 +13,12 @@ public class NpcMinigameHandler2D : MonoBehaviour
     [Header("Shortcircuit Minigames (random)")]
     [SerializeField] private GameObject[] shortcircuitMinigamePrefabs;
 
+    [Header("Fallback Interaction")]
+    [SerializeField] private string playerTag = "Player";
+    [SerializeField] private float interactDistance = 1.5f; // <- anpassen
+
     private NpcPatrolController2D npc;
+    private Transform playerTf;
 
     private INpcMinigame activeMinigame;
     private GameObject activeGO;
@@ -22,54 +27,45 @@ public class NpcMinigameHandler2D : MonoBehaviour
     void Awake()
     {
         npc = GetComponent<NpcPatrolController2D>();
+        var player = GameObject.FindGameObjectWithTag(playerTag);
+        if (player != null) playerTf = player.transform;
     }
 
     void Update()
     {
         if (npc == null || !npc.Active) return;
+        if (!npc.WaitingForPlayer) return;
 
-        // nur wenn NPC wartet + Player in Range
-        if (!npc.WaitingForPlayer || !npc.PlayerInZone) return;
+        bool canInteract = npc.PlayerInZone;
 
-        // SHORTCIRCUIT => random Minigame starten
+        // Fallback: wenn Trigger nicht gefeuert hat, Distanz als Backup
+        if (!canInteract && playerTf != null)
+        {
+            canInteract = Vector2.Distance(playerTf.position, transform.position) <= interactDistance;
+        }
+
+        if (!canInteract) return;
+
         if (npc.Shortcircuited)
         {
             if (!running && Input.GetKeyDown(startFixKey))
                 StartRandomShortcircuitMinigame();
-
             return;
         }
 
-        // andere Wait States (Obstacle / Oil) => optional weiter mit E
         if (Input.GetKeyDown(continueKey))
             npc.ReleaseAndContinue();
     }
 
     private void StartRandomShortcircuitMinigame()
     {
-        if (shortcircuitMinigamePrefabs == null || shortcircuitMinigamePrefabs.Length == 0)
-        {
-            Debug.LogWarning("No shortcircuit minigame prefabs assigned!", this);
-            return;
-        }
-
+        if (shortcircuitMinigamePrefabs == null || shortcircuitMinigamePrefabs.Length == 0) return;
         if (activeGO != null) return;
 
-        // Random wählen
         int idx = Random.Range(0, shortcircuitMinigamePrefabs.Length);
-        GameObject prefab = shortcircuitMinigamePrefabs[idx];
+        var prefab = shortcircuitMinigamePrefabs[idx];
+        if (prefab == null) return;
 
-        if (prefab == null)
-        {
-            Debug.LogWarning($"Shortcircuit minigame prefab at index {idx} is null!", this);
-            return;
-        }
-
-        StartMinigame(prefab);
-    }
-
-    private void StartMinigame(GameObject prefab)
-    {
         running = true;
 
         activeGO = Instantiate(prefab, uiParent);
@@ -77,7 +73,6 @@ public class NpcMinigameHandler2D : MonoBehaviour
 
         if (activeMinigame == null)
         {
-            Debug.LogError($"Prefab '{prefab.name}' has no component implementing INpcMinigame.", this);
             Destroy(activeGO);
             activeGO = null;
             running = false;
@@ -92,14 +87,13 @@ public class NpcMinigameHandler2D : MonoBehaviour
     private void OnSolved()
     {
         Cleanup();
-
         npc.Shortcircuited = false;
         npc.ReleaseAndContinue();
     }
 
     private void OnFailed()
     {
-        // NPC bleibt shortcircuited, Player kann erneut F drücken
+        // NPC bleibt shortcircuited & waiting, Player muss erneut starten
         Cleanup(keepNpcWaiting: true);
     }
 
@@ -111,8 +105,7 @@ public class NpcMinigameHandler2D : MonoBehaviour
             activeMinigame.Failed -= OnFailed;
         }
 
-        if (activeGO != null)
-            Destroy(activeGO);
+        if (activeGO != null) Destroy(activeGO);
 
         activeMinigame = null;
         activeGO = null;

@@ -2,15 +2,17 @@ using UnityEngine;
 
 public class LevelSectionEndTrigger : MonoBehaviour
 {
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
+    [SerializeField] private LevelSectionMinigameAdapter adapter;
+    [SerializeField] private string playerTag = "Player";
+
+    void Awake()
     {
-        
+        if (adapter == null) adapter = GetComponentInParent<LevelSectionMinigameAdapter>();
     }
 
-    // Update is called once per frame
-    void Update()
+    void OnTriggerEnter2D(Collider2D other)
     {
-        
+        if (!other.CompareTag(playerTag)) return;
+        adapter.Complete();
     }
 }
