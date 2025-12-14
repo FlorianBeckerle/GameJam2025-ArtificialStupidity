@@ -46,6 +46,7 @@ namespace Pipes
 
         void InvokeNext()
         {
+            if (_next == null) return;
             if (isOn)
             {
                 _next.SwitchMode(isOn);    
