@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 5280581138508965174}
   - component: {fileID: 5996908623630479745}
   - component: {fileID: 5701039549069174851}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: ObstacleObject
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -197,7 +197,7 @@ GameObject:
   - component: {fileID: 8967410212523422302}
   - component: {fileID: 1645484668627153547}
   - component: {fileID: 7918467509617224223}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: PushableSquare
   m_TagString: Untagged
   m_Icon: {fileID: 0}

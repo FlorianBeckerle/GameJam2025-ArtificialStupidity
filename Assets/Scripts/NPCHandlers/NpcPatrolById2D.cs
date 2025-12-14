@@ -1,6 +1,6 @@
 using UnityEngine;
 using System.Collections.Generic;
-using System;
+
 
 [RequireComponent(typeof(Rigidbody2D))]
 public class NpcPatrolById2D : MonoBehaviour
@@ -64,6 +64,10 @@ public class NpcPatrolById2D : MonoBehaviour
         // ⭐ Wenn NPC wartet: nur per Player-Input weitermachen
         if (waitingForPlayer)
         {
+
+            Debug.Log($"WAITING | playerInZone={playerInZone}", this);
+            if (playerInZone && Input.GetKeyDown(interactKey)) Debug.Log("E DETECTED", this);
+
             rb.linearVelocity = Vector2.zero;
             if (playerInZone && Input.GetKeyDown(interactKey))
             {
@@ -118,17 +122,7 @@ public class NpcPatrolById2D : MonoBehaviour
     }
 
     // Trigger kommt von deinem Child-CircleCollider2D (Is Trigger = ON)
-    void OnTriggerEnter2D(Collider2D other)
-    {
-        if (other.CompareTag("Player"))
-            playerInZone = true;
-    }
 
-    void OnTriggerExit2D(Collider2D other)
-    {
-        if (other.CompareTag("Player"))
-            playerInZone = false;
-    }
 
     public bool IsWaiting() => waitingForPlayer;
 
@@ -139,7 +133,21 @@ public class NpcPatrolById2D : MonoBehaviour
             (Vector3)rb.position + (Vector3)((((Vector2)currentTarget.transform.position - rb.position).normalized) * stopDistance));
     }
 
-    void OnTriggerStay2D(Collider2D other)
+
+
+    public void OnZoneEnter(Collider2D other)
+    {
+        if (other.CompareTag("Player"))
+            playerInZone = true;
+    }
+
+    public void OnZoneExit(Collider2D other)
+    {
+        if (other.CompareTag("Player"))
+            playerInZone = false;
+    }
+
+    public void OnZoneStay(Collider2D other)
     {
         if (other.CompareTag("Player"))
             playerInZone = true;
