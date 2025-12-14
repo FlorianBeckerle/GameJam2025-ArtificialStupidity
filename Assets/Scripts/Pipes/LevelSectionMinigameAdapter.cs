@@ -1,5 +1,5 @@
 using UnityEngine;
-using System;  
+using System;
 
 public class LevelSectionMinigameAdapter : MonoBehaviour, INpcMinigame
 {
@@ -13,35 +13,53 @@ public class LevelSectionMinigameAdapter : MonoBehaviour, INpcMinigame
     [Header("Player")]
     [SerializeField] private string playerTag = "Player";
     [SerializeField] private bool snapToStartOnBegin = true;
+    [SerializeField] private bool returnPlayerToOriginalPosition = true; // <- empfehle true
 
-    [SerializeField] private bool returnPlayerToOriginalPosition = false;
-
-    private GameObject player;
+    private GameObject playerRoot;
     private Vector3 originalPlayerPosition;
 
-    private PlayerCore playerCore; //MovementMode -> default = topdown, classic -> JumpandRun
+    private PlayerCore playerCore;
+    private Rigidbody2D playerRb;
+
+    private bool started;
 
     public void Begin()
     {
-        player = GameObject.FindGameObjectWithTag(playerTag);
-        if (player == null)
+        if (started) return;
+        started = true;
+
+        var tagged = GameObject.FindGameObjectWithTag(playerTag);
+        if (tagged == null)
         {
             Debug.LogError($"LevelSectionMinigameAdapter: Kein GameObject mit Tag '{playerTag}' gefunden.", this);
+            started = false;
             Failed?.Invoke();
             return;
         }
 
-        playerCore = player.GetComponent<PlayerCore>();
+        // Robust: PlayerCore kann auf Parent/Child sitzen
+        playerCore = tagged.GetComponentInParent<PlayerCore>();
+        if (playerCore == null) playerCore = tagged.GetComponentInChildren<PlayerCore>();
+
         if (playerCore == null)
         {
-            Debug.LogError("LevelSectionMinigameAdapter: PlayerCore-Komponente nicht gefunden.", this);
+            Debug.LogError("LevelSectionMinigameAdapter: PlayerCore-Komponente nicht gefunden (Parent/Child geprüft).", this);
+            started = false;
             Failed?.Invoke();
             return;
         }
+
+        // Wir arbeiten ab hier immer mit dem Root, wo PlayerCore sitzt
+        playerRoot = playerCore.gameObject;
+
+        // Rigidbody2D möglichst am Root oder Parent suchen
+        playerRb = playerRoot.GetComponent<Rigidbody2D>();
+        if (playerRb == null) playerRb = playerRoot.GetComponentInParent<Rigidbody2D>();
 
         if (startPoint == null)
         {
             Debug.LogError("LevelSectionMinigameAdapter: Startpunkt ist nicht gesetzt.", this);
+            started = false;
             Failed?.Invoke();
             return;
         }
@@ -49,46 +67,47 @@ public class LevelSectionMinigameAdapter : MonoBehaviour, INpcMinigame
         if (endTrigger == null)
         {
             Debug.LogError("LevelSectionMinigameAdapter: End-Trigger ist nicht gesetzt.", this);
+            started = false;
             Failed?.Invoke();
             return;
         }
 
         if (!endTrigger.isTrigger)
-        {
             Debug.LogWarning("LevelSectionMinigameAdapter: End-Trigger ist kein Trigger. Setze isTrigger auf true.", this);
-        }
 
-        originalPlayerPosition =player.transform.position;
+        originalPlayerPosition = playerRoot.transform.position;
 
-        if(snapToStartOnBegin)
+        if (snapToStartOnBegin)
             TeleportPlayerTo(startPoint.position);
 
         playerCore.SetMode(Player.MovementMode.Classic);
 
         endTrigger.enabled = true;
-        // Hier ggf. Setup/Start Animation/UI
     }
 
     private void TeleportPlayerTo(Vector3 position)
     {
-        var rb2D = player.GetComponent<Rigidbody2D>();
-        if (rb2D != null)
+        if (playerRb != null)
         {
-            rb2D.position = position;
-            rb2D.linearVelocity = Vector2.zero; // Stoppe jegliche Bewegung
+            playerRb.linearVelocity = Vector2.zero;
+            playerRb.position = position;
+            Physics2D.SyncTransforms();
         }
-        else
+        else if (playerRoot != null)
         {
-            player.transform.position = position;
+            playerRoot.transform.position = position;
+            Physics2D.SyncTransforms();
         }
     }
 
-    // Diese Methoden rufst du auf, wenn dein LevelSection-Minispiel fertig ist:
     public void Complete()
     {
+        if (!started) return;
+        started = false;
+
         playerCore.SetMode(Player.MovementMode.Default);
 
-        if(returnPlayerToOriginalPosition)
+        if (returnPlayerToOriginalPosition)
             TeleportPlayerTo(originalPlayerPosition);
 
         Solved?.Invoke();
@@ -96,7 +115,14 @@ public class LevelSectionMinigameAdapter : MonoBehaviour, INpcMinigame
 
     public void Fail()
     {
+        if (!started) return;
+        started = false;
+
         playerCore.SetMode(Player.MovementMode.Default);
+
+        if (returnPlayerToOriginalPosition)
+            TeleportPlayerTo(originalPlayerPosition);
+
         Failed?.Invoke();
     }
 }
