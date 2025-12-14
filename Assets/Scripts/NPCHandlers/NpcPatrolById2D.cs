@@ -23,6 +23,11 @@ public class NpcPatrolById2D : MonoBehaviour
 
     [SerializeField] private Collider2D bodyCollider;
 
+    [Header("Water Puddle (shortcircuit)")]
+    [SerializeField] private KeyCode puddleKey = KeyCode.F;
+    private bool shortcircuited = false;
+    private bool playerInFixRange = false;
+
     private Dictionary<int, PatrolPoint> points;
     private PatrolPoint currentTarget;
     private Rigidbody2D rb;
@@ -72,6 +77,26 @@ public class NpcPatrolById2D : MonoBehaviour
 
     void Update()
     {
+        if (shortcircuited)
+        {
+            rb.linearVelocity = Vector2.zero;
+            if (playerInZone && Input.GetKeyDown(puddleKey))
+            {
+                shortcircuited = false;
+                Debug.Log("NPC fixed from puddle!", this);
+                ignoreObstacleUntil = Time.time + 0.25f;
+
+                if (interactZone != null)
+                    interactZone.enabled = false;
+
+                playerInZone = false;
+
+                Debug.Log("NPC resumed patrol", this);
+            }
+            return;
+        }
+
+
         if (!active || currentTarget == null) return;
 
         // ⭐ Wenn NPC wartet: nur per Player-Input weitermachen
@@ -101,7 +126,7 @@ public class NpcPatrolById2D : MonoBehaviour
         Vector2 targetPos = currentTarget.transform.position;
         Vector2 dir = (targetPos - rb.position).normalized;
 
-        if (Time.time >= ignoreObstacleUntil){
+        if (Time.time >= ignoreObstacleUntil && obstacleMask != 0){
             Vector2 rayOrigin = rb.position + new Vector2(0f, rayOffsetY);
             RaycastHit2D hit = Physics2D.Raycast(rayOrigin, dir, stopDistance, obstacleMask);
 
@@ -186,20 +211,39 @@ public class NpcPatrolById2D : MonoBehaviour
 
     void OnTriggerEnter2D(Collider2D other)
     {
-        if (!other.CompareTag("Player")) return;
-        Debug.Log("FORWARDER: PLAYER entered NPC zone", this);
-        OnZoneEnter(other);
+        // 1) PUDDLE: NPC läuft in Hazard rein
+        if (other.CompareTag("Puddle"))
+        {
+            shortcircuited = true;
+            rb.linearVelocity = Vector2.zero;
+
+            // Optional: damit Player fixen kann, Zone einschalten
+            if (interactZone != null) interactZone.enabled = true;
+
+            Destroy(other.gameObject);
+
+            Debug.Log("NPC shortcircuited by puddle!", this);
+            return;
+        }
+
+        // 2) PLAYER: Interaktionszone
+        if (other.CompareTag("Player"))
+        {
+            OnZoneEnter(other);
+            return;
+        }
     }
+
 
     void OnTriggerStay2D(Collider2D other)
     {
-        if (!other.CompareTag("Player")) return;
-        OnZoneStay(other);
+        if (other.CompareTag("Player"))
+            OnZoneStay(other);
     }
 
     void OnTriggerExit2D(Collider2D other)
     {
-        if (!other.CompareTag("Player")) return;
-        OnZoneExit(other);
+        if (other.CompareTag("Player"))
+            OnZoneExit(other);
     }
 }
