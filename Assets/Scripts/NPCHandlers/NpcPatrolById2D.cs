@@ -2,6 +2,7 @@ using UnityEngine;
 using System.Collections.Generic;
 
 
+
 [RequireComponent(typeof(Rigidbody2D))]
 public class NpcPatrolById2D : MonoBehaviour
 {
@@ -19,6 +20,8 @@ public class NpcPatrolById2D : MonoBehaviour
 
     [Header("Player Interaction")]
     [SerializeField] private KeyCode interactKey = KeyCode.E;
+
+    [SerializeField] private Collider2D bodyCollider;
 
     private Dictionary<int, PatrolPoint> points;
     private PatrolPoint currentTarget;
@@ -38,6 +41,9 @@ public class NpcPatrolById2D : MonoBehaviour
 
 
         rb = GetComponent<Rigidbody2D>();
+        rb.bodyType = RigidbodyType2D.Kinematic;
+        rb.gravityScale = 0f;
+        rb.constraints = RigidbodyConstraints2D.FreezeRotation;
 
         var all = FindObjectsByType<PatrolPoint>(FindObjectsSortMode.None);
         points = new Dictionary<int, PatrolPoint>();
@@ -155,6 +161,9 @@ public class NpcPatrolById2D : MonoBehaviour
     {
         if (!other.CompareTag("Player")) return;
         playerInZone = true;
+
+        if(bodyCollider != null)
+            bodyCollider.enabled = false;
         Debug.Log("PLAYER entered NPC zone", this);
     }
 
@@ -162,6 +171,9 @@ public class NpcPatrolById2D : MonoBehaviour
     {
         if (!other.CompareTag("Player")) return;
         playerInZone = false;
+
+        if (bodyCollider != null)
+            bodyCollider.enabled = true;
         Debug.Log("PLAYER exited NPC zone", this);
     }
 
@@ -170,5 +182,24 @@ public class NpcPatrolById2D : MonoBehaviour
         if (!other.CompareTag("Player")) return;
         playerInZone = true;
         Debug.Log("PLAYER staying in NPC zone", this);
+    }
+
+    void OnTriggerEnter2D(Collider2D other)
+    {
+        if (!other.CompareTag("Player")) return;
+        Debug.Log("FORWARDER: PLAYER entered NPC zone", this);
+        OnZoneEnter(other);
+    }
+
+    void OnTriggerStay2D(Collider2D other)
+    {
+        if (!other.CompareTag("Player")) return;
+        OnZoneStay(other);
+    }
+
+    void OnTriggerExit2D(Collider2D other)
+    {
+        if (!other.CompareTag("Player")) return;
+        OnZoneExit(other);
     }
 }
