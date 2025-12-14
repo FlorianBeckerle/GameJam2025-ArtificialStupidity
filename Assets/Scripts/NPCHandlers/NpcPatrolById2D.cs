@@ -1,6 +1,7 @@
 using UnityEngine;
 using System.Collections.Generic;
 
+
 [RequireComponent(typeof(Rigidbody2D))]
 public class NpcPatrolById2D : MonoBehaviour
 {
@@ -11,9 +12,13 @@ public class NpcPatrolById2D : MonoBehaviour
     [SerializeField] private SpriteRenderer sprite;
 
     [Header("Obstacle Stop")]
-    [SerializeField] private LayerMask obstacleMask;   // Hindernis-Layer hier setzen
-    [SerializeField] private float stopDistance = 0.3f; // wie früh er stoppt
-    [SerializeField] private float rayOffsetY = 0.0f;   // falls nötig, leicht hoch/runter
+    [SerializeField] private LayerMask obstacleMask;
+    [SerializeField] private float stopDistance = 0.3f;
+    [SerializeField] private float rayOffsetY = 0.0f;
+    [SerializeField] private Collider2D interactZone;
+
+    [Header("Player Interaction")]
+    [SerializeField] private KeyCode interactKey = KeyCode.E;
 
     private Dictionary<int, PatrolPoint> points;
     private PatrolPoint currentTarget;
@@ -21,9 +26,17 @@ public class NpcPatrolById2D : MonoBehaviour
 
     private bool active = true;
     private bool waitingForPlayer = false;
+    private bool playerInZone = false;
+    private float ignoreObstacleUntil = 0f;
 
     void Awake()
     {
+        if(interactZone != null) interactZone.enabled = false;
+
+        playerInZone = false;
+        waitingForPlayer = false;
+
+
         rb = GetComponent<Rigidbody2D>();
 
         var all = FindObjectsByType<PatrolPoint>(FindObjectsSortMode.None);
@@ -54,24 +67,47 @@ public class NpcPatrolById2D : MonoBehaviour
     void Update()
     {
         if (!active || currentTarget == null) return;
-        if (waitingForPlayer) return;
 
-        Vector2 targetPos = currentTarget.transform.position;
-        Vector2 toTarget = (targetPos - rb.position);
-        Vector2 dir = toTarget.normalized;
-
-        Vector2 rayOrigin = rb.position + new Vector2(0f, rayOffsetY);
-        RaycastHit2D hit = Physics2D.Raycast(rayOrigin, dir, stopDistance, obstacleMask);
-
-        if (hit.collider != null)
+        // ⭐ Wenn NPC wartet: nur per Player-Input weitermachen
+        if (waitingForPlayer)
         {
-            // stop und warten
-            waitingForPlayer = true;
+
+            Debug.Log($"WAITING | playerInZone={playerInZone}", this);
+            if (playerInZone && Input.GetKeyDown(interactKey)) Debug.Log("E DETECTED", this);
+
             rb.linearVelocity = Vector2.zero;
+            if (playerInZone && Input.GetKeyDown(interactKey))
+            {
+                waitingForPlayer = false;
+                ignoreObstacleUntil = Time.time + 0.25f;
+
+                // ⭐ InteractZone wieder AUS
+                if (interactZone != null)
+                    interactZone.enabled = false;
+
+                // optional sauber zurücksetzen
+                playerInZone = false;
+            }
+
             return;
         }
 
-        // bewegen
+        Vector2 targetPos = currentTarget.transform.position;
+        Vector2 dir = (targetPos - rb.position).normalized;
+
+        if (Time.time >= ignoreObstacleUntil){
+            Vector2 rayOrigin = rb.position + new Vector2(0f, rayOffsetY);
+            RaycastHit2D hit = Physics2D.Raycast(rayOrigin, dir, stopDistance, obstacleMask);
+
+            if (hit.collider != null)
+            {
+                waitingForPlayer = true;
+                rb.linearVelocity = Vector2.zero;
+                if(interactZone != null) interactZone.enabled = true;
+                return;
+            }
+        }
+
         Vector2 next = Vector2.MoveTowards(rb.position, targetPos, speed * Time.deltaTime);
         rb.MovePosition(next);
 
@@ -101,16 +137,38 @@ public class NpcPatrolById2D : MonoBehaviour
         currentTarget = nextPoint;
     }
 
-    public void Continue()
-    {
-        waitingForPlayer = false;
-    }
+    // Trigger kommt von deinem Child-CircleCollider2D (Is Trigger = ON)
+
 
     public bool IsWaiting() => waitingForPlayer;
 
     void OnDrawGizmosSelected()
     {
         if (rb == null || currentTarget == null) return;
-        Gizmos.DrawLine((Vector3)rb.position, (Vector3)rb.position + (Vector3)((((Vector2)currentTarget.transform.position - rb.position).normalized) * stopDistance));
+        Gizmos.DrawLine((Vector3)rb.position,
+            (Vector3)rb.position + (Vector3)((((Vector2)currentTarget.transform.position - rb.position).normalized) * stopDistance));
+    }
+
+
+
+    public void OnZoneEnter(Collider2D other)
+    {
+        if (!other.CompareTag("Player")) return;
+        playerInZone = true;
+        Debug.Log("PLAYER entered NPC zone", this);
+    }
+
+    public void OnZoneExit(Collider2D other)
+    {
+        if (!other.CompareTag("Player")) return;
+        playerInZone = false;
+        Debug.Log("PLAYER exited NPC zone", this);
+    }
+
+    public void OnZoneStay(Collider2D other)
+    {
+        if (!other.CompareTag("Player")) return;
+        playerInZone = true;
+        Debug.Log("PLAYER staying in NPC zone", this);
     }
 }

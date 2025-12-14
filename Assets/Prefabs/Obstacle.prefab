@@ -13,6 +13,7 @@ GameObject:
   - component: {fileID: 8987282048895370336}
   - component: {fileID: 4736874983494895999}
   - component: {fileID: -1504441190067591986}
+  - component: {fileID: -4324741852046474676}
   m_Layer: 6
   m_Name: Obstacle
   m_TagString: Obstacle
@@ -144,13 +145,13 @@ Rigidbody2D:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1855530065472024838}
-  m_BodyType: 0
+  m_BodyType: 1
   m_Simulated: 1
   m_UseFullKinematicContacts: 0
   m_UseAutoMass: 0
   m_Mass: 1
-  m_LinearDamping: 0
-  m_AngularDamping: 0.05
+  m_LinearDamping: 20
+  m_AngularDamping: 20
   m_GravityScale: 0
   m_Material: {fileID: 0}
   m_IncludeLayers:
@@ -180,3 +181,18 @@ MonoBehaviour:
   blockingMask:
     serializedVersion: 2
     m_Bits: 64
+  pushKey: 101
+--- !u!114 &-4324741852046474676
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1855530065472024838}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 509f05901954af84080ecd9c0cac074c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _spriteRenderer: {fileID: 0}
+  sortingMultiplier: 1000

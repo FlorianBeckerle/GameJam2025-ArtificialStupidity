@@ -13,6 +13,8 @@ public class MovementDefault : MonoBehaviour, IMovement
     
     Vector2 velocity;
     [SerializeField] private float currentSpeed;
+    
+    private bool wasFlipped = false;
 
     void ResetRotation()
     {
@@ -52,6 +54,20 @@ public class MovementDefault : MonoBehaviour, IMovement
         velocity.y = Mathf.MoveTowards(velocity.y, targetVel.y, accelY * dt);
         
         
+        
+        // Only react to actual horizontal movement
+        if (velocity.x < 0 && !wasFlipped)
+        {
+            // Turn left
+            wasFlipped = true;
+            graphics.GetComponent<SpriteRenderer>().flipX = true;
+        }
+        else if (velocity.x > 0 && wasFlipped)
+        {
+            // Turn right
+            wasFlipped = false;
+            graphics.GetComponent<SpriteRenderer>().flipX = false;
+        }
         
         rb.MovePosition(rb.position + velocity * dt);
         
