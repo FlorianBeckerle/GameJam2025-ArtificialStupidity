@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 7997701590914576776}
   - component: {fileID: 3936206963388908430}
   - component: {fileID: -7461485073901214417}
-  m_Layer: 0
+  m_Layer: 31
   m_Name: PatrolPoint1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -79,7 +79,7 @@ SpriteRenderer:
   m_SortingLayer: 1
   m_SortingOrder: 0
   m_Sprite: {fileID: 7482667652216324306, guid: 311925a002f4447b3a28927169b83ea6, type: 3}
-  m_Color: {r: 0.20185119, g: 0.6792453, b: 0.27652824, a: 0}
+  m_Color: {r: 0.20185119, g: 0.6792453, b: 0.27652824, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
