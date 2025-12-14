@@ -27,13 +27,13 @@ namespace Pipes
 
 [SerializeField]
         private bool clickDisabled = false;
-
+        
         void Update()
         {
             if (_next == null) return;
             
 
-            if (!_pendingState && _next.isOn != isOn && isOn)
+            if (!_pendingState != _next.isOn)
             {
                 
                 _pendingState = isOn;
@@ -84,8 +84,12 @@ namespace Pipes
             if (other.TryGetComponent<PipeNode>(out var node))
             {
                 //Only set node if it touches the others start
-                if(node._ende != other)
+                if (node._ende != other)
+                {
+
                     _next = node;
+                }
+
             }
         }
 

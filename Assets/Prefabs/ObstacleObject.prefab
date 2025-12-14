@@ -11,7 +11,6 @@ GameObject:
   - component: {fileID: 5280581138508965174}
   - component: {fileID: 5996908623630479745}
   - component: {fileID: 5701039549069174851}
-  - component: {fileID: 2249415469131766321}
   m_Layer: 6
   m_Name: ObstacleObject
   m_TagString: Untagged
@@ -81,20 +80,6 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 0
   pushKey: 101
---- !u!114 &2249415469131766321
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3198950202821406792}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 509f05901954af84080ecd9c0cac074c, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  _spriteRenderer: {fileID: 0}
-  sortingMultiplier: 1000
 --- !u!1 &3313628938915841905
 GameObject:
   m_ObjectHideFlags: 0
@@ -212,6 +197,7 @@ GameObject:
   - component: {fileID: 8967410212523422302}
   - component: {fileID: 1645484668627153547}
   - component: {fileID: 7918467509617224223}
+  - component: {fileID: 2970075944636154837}
   m_Layer: 6
   m_Name: PushableSquare
   m_TagString: Untagged
@@ -278,8 +264,8 @@ SpriteRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
-  m_Sprite: {fileID: 7482667652216324306, guid: 311925a002f4447b3a28927169b83ea6, type: 3}
-  m_Color: {r: 0.02391731, g: 0, b: 0.7264151, a: 1}
+  m_Sprite: {fileID: 21300000, guid: 175d24b74b83c3f4f85925464a74b59a, type: 3}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
@@ -362,3 +348,17 @@ Rigidbody2D:
   m_SleepingMode: 1
   m_CollisionDetection: 0
   m_Constraints: 4
+--- !u!114 &2970075944636154837
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7512793124548371679}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 509f05901954af84080ecd9c0cac074c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _spriteRenderer: {fileID: 0}
+  sortingMultiplier: 1000

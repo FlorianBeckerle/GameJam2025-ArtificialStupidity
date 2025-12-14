@@ -57,6 +57,7 @@ MonoBehaviour:
   _isEnd: 0
   isOn: 0
   _next: {fileID: 0}
+  clickDisabled: 0
 --- !u!61 &3011344543240162
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -210,7 +211,7 @@ CircleCollider2D:
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
-  m_Offset: {x: 0.1, y: -0.1}
+  m_Offset: {x: -0.1, y: -0.1}
   m_Radius: 0.5
 --- !u!1 &972315776849580493
 GameObject:
@@ -286,8 +287,8 @@ SpriteRenderer:
   m_AutoUVMaxDistance: 0.5
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
-  m_SortingLayerID: 0
-  m_SortingLayer: 0
+  m_SortingLayerID: 444469757
+  m_SortingLayer: 2
   m_SortingOrder: 0
   m_Sprite: {fileID: 1530933625, guid: c918713f2cf7bd440b41ec0cabc375dc, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -395,8 +396,8 @@ SpriteRenderer:
   m_AutoUVMaxDistance: 0.5
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
-  m_SortingLayerID: 0
-  m_SortingLayer: 0
+  m_SortingLayerID: 444469757
+  m_SortingLayer: 2
   m_SortingOrder: 0
   m_Sprite: {fileID: -1284949724, guid: d96a1be72cf669a4a8408d640ad6b5a5, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
