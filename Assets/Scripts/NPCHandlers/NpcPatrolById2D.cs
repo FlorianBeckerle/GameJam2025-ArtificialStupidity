@@ -56,6 +56,7 @@ public class NpcPatrolById2D : MonoBehaviour
     // Internals
     // -------------------------
     private Dictionary<int, PatrolPoint> points;          // Alle PatrolPoints nach ID
+    private Dictionary<int,int> prevMap = new Dictionary<int,int>(); // Map von nextId zu prevId
     private PatrolPoint currentTarget;                    // Aktuelles Ziel (der Punkt, zu dem gelaufen wird)
     private Rigidbody2D rb;
 
@@ -63,6 +64,38 @@ public class NpcPatrolById2D : MonoBehaviour
     private bool waitingForPlayer = false;                // Wartet der NPC wegen Obstacle auf Player (E)?
     private bool playerInZone = false;                    // Player ist in InteractZone (Circle Trigger)
     private float ignoreObstacleUntil = 0f;               // Kurz Obstacles ignorieren (damit er nach "E/F" nicht sofort wieder stoppt)
+
+    private bool hasPaket = false;                            // NPC hat ein Paket (für Visuals)
+
+    public event System.Action OnPickupArrived;
+
+    private bool returnAfterFix = false;
+
+    private bool returningToPickup = false;
+
+    public bool HasPaket => hasPaket;
+
+    public bool IsSlipped => slipped;
+
+    public bool IsShortcircuited => shortcircuited;
+    public bool IsWaitingForPlayer => waitingForPlayer;
+    public bool IsMoving => active && !waitingForPlayer && !shortcircuited && !slipped;
+
+    public bool isAfterDropOffPoint => currentTarget != null && currentTarget.isDropOffPoint;
+
+    public bool isAtPickupPoint => currentTarget != null && currentTarget.isPickupPoint;
+
+    public Vector2 CurrentTargetPos => currentTarget != null ? (Vector2)currentTarget.transform.position : rb.position;
+
+    public Vector2 MoveDirection
+    {
+        get
+        {
+            if (currentTarget == null) return Vector2.zero;
+            Vector2 dir = ((Vector2)currentTarget.transform.position - rb.position);
+            return dir.sqrMagnitude > 0.0001f ? dir.normalized : Vector2.zero;
+        }
+    }
 
     void Awake()
     {
@@ -104,13 +137,41 @@ public class NpcPatrolById2D : MonoBehaviour
             return;
         }
 
+        if (currentTarget.isPickupPoint)
+        {
+            hasPaket = true;
+            OnPickupArrived?.Invoke(); // 1x Trigger für HookDown/HookUp
+        }
+
+        //PickupPoint 
+        if (currentTarget.isPickupPoint)
+        {
+            Debug.Log("Starting point is a Pickup Point.", this);
+        }
+
+        //DropOff Point initial check
+        if (currentTarget.isDropOffPoint)
+        {
+            Debug.Log("Starting point is a DropOff Point, advancing to next point.", this);
+        }
+
         // NPC auf Startpunkt setzen und direkt zum nächsten Ziel wechseln
         rb.position = currentTarget.transform.position;
         AdvanceToNext();
+        prevMap.Clear();
+        foreach (var kvp in points)
+        {
+            int id = kvp.Key;
+            int next = kvp.Value.nextId;
+            if (next != -1)
+                prevMap[next] = id;
+        }
     }
 
-    void Update()
+    void Update()    
     {
+
+
         // -------------------------
         // 1) Kurzschluss-Zustand: NPC steht und wartet auf "Fix" (Key F)
         // -------------------------
@@ -129,14 +190,24 @@ public class NpcPatrolById2D : MonoBehaviour
         // -------------------------
         if (waitingForPlayer)
         {
+
             Debug.Log($"WAITING | playerInZone={playerInZone}", this);
 
             rb.linearVelocity = Vector2.zero;
 
+            KeyCode key = (shortcircuited || slipped) ? puddleKey : interactKey;
+
             // Player muss in InteractZone sein UND E drücken
-            if (playerInZone && Input.GetKeyDown(interactKey))
+            if (playerInZone && Input.GetKeyDown(key))
             {
                 waitingForPlayer = false;
+
+                if (returnAfterFix)
+                {
+                    returningToPickup = true;   // jetzt erst loslaufen
+                    returnAfterFix = false;
+                }
+
 
                 // Kurz Obstacles ignorieren, damit er nach dem "Go" nicht sofort wieder stoppt
                 ignoreObstacleUntil = Time.time + 0.25f;
@@ -149,6 +220,7 @@ public class NpcPatrolById2D : MonoBehaviour
                 playerInZone = false;
 
                 shortcircuited = false;
+                slipped = false;
             }
 
             // In Wartestatus nicht weiter patrouillieren
@@ -187,23 +259,49 @@ public class NpcPatrolById2D : MonoBehaviour
         rb.MovePosition(next);
 
         // 4c) Ziel erreicht -> nächsten PatrolPoint setzen
-        if (Vector2.Distance(rb.position, targetPos) <= reachDistance)
+       if (Vector2.Distance(rb.position, targetPos) <= reachDistance)
+        {
+            HandlePointArrival(currentTarget);
             AdvanceToNext();
+        }
+
     }
 
     // Wechselt currentTarget auf den nächsten PatrolPoint in der Kette
     void AdvanceToNext()
     {
-        int nextId = currentTarget.nextId;
+        int nextId;
 
-        // -1 bedeutet "Ende"
+        if (returningToPickup)
+        {
+            // Wenn aktueller Punkt schon Pickup ist -> Reverse beenden und normal weiter
+            if (currentTarget != null && currentTarget.isPickupPoint)
+            {
+                returningToPickup = false;
+                nextId = currentTarget.nextId;
+            }
+            else
+            {
+                // rückwärts: Vorgänger holen
+                if (!prevMap.TryGetValue(currentTarget.id, out nextId))
+                {
+                    Debug.LogWarning("No previous point found - stop reverse.", this);
+                    returningToPickup = false;
+                    nextId = currentTarget.nextId;
+                }
+            }
+        }
+        else
+        {
+            nextId = currentTarget.nextId;
+        }
+
         if (nextId == -1)
         {
             active = false;
             return;
         }
 
-        // nächsten PatrolPoint holen
         if (!points.TryGetValue(nextId, out var nextPoint))
         {
             Debug.LogError($"Next Patrolpoint ID {nextId} not found!", this);
@@ -211,7 +309,6 @@ public class NpcPatrolById2D : MonoBehaviour
             return;
         }
 
-        // Sprite Flip links/rechts je nach Richtung
         if (sprite != null)
         {
             float dx = nextPoint.transform.position.x - rb.position.x;
@@ -221,6 +318,7 @@ public class NpcPatrolById2D : MonoBehaviour
 
         currentTarget = nextPoint;
     }
+
 
     // Nur zum Debug: zeigt Raycast-Linie im Scene View wenn Objekt ausgewählt ist
     void OnDrawGizmosSelected()
@@ -302,11 +400,17 @@ public class NpcPatrolById2D : MonoBehaviour
         if (other.CompareTag("Oil"))
         {
             slipped = true;
+            shortcircuited = false;
+
+            returnAfterFix = true;
+            waitingForPlayer = true;
             rb.linearVelocity = Vector2.zero;
 
             // InteractZone aktivieren, damit Player zum Fixen in die Nähe gehen kann
             if (interactZone != null)
                 interactZone.enabled = true;
+
+            Destroy(other.gameObject);
 
             Debug.Log("NPC slipped on oil!", this);
             return;
@@ -326,4 +430,25 @@ public class NpcPatrolById2D : MonoBehaviour
         if (other.CompareTag("Player"))
             OnZoneExit(other);
     }
+
+    void HandlePointArrival(PatrolPoint point)
+    {
+        if (point == null) return;
+
+        if (point.isPickupPoint)
+        {
+            hasPaket = true;
+            OnPickupArrived?.Invoke(); // 1x Trigger für HookDown/HookUp
+        }
+
+        if (point.isDropOffPoint)
+        {
+            hasPaket = false;
+            // optional: eigenes Event/Trigger für DropOff
+        }
+    }
+
+
+
+
 }

@@ -16,22 +16,5 @@ public class NpcInteractZoneForwarder2D : MonoBehaviour
         Debug.Log($"FORWARDER: Awake, found npc: {npc != null}", this);
     }
 
-    void OnTriggerEnter2D(Collider2D other)
-    {
-        if (!other.CompareTag("Player")) return;
-        Debug.Log("FORWARDER: PLAYER entered NPC zone", this);
-        npc?.OnZoneEnter(other);
-    }
 
-    void OnTriggerStay2D(Collider2D other)
-    {
-        if (!other.CompareTag("Player")) return;
-        npc?.OnZoneStay(other);
-    }
-
-    void OnTriggerExit2D(Collider2D other)
-    {
-        if (!other.CompareTag("Player")) return;
-        npc?.OnZoneExit(other);
-    }
 }

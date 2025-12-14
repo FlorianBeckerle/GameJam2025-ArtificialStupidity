@@ -6,6 +6,7 @@ TagManager:
   tags:
   - Obstacle
   - Puddle
+  - Oil
   layers:
   - Default
   - TransparentFX

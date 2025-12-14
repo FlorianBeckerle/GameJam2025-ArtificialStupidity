@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 8947678741934134730}
   m_Layer: 9
   m_Name: OilObject
-  m_TagString: Puddle
+  m_TagString: Oil
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
