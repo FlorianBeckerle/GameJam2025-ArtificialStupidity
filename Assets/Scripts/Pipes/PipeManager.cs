@@ -32,15 +32,7 @@ public class PipeManager : MonoBehaviour
 
     [Header("Layout (0 = empty)")]
     [TextArea(8, 20)]
-    [SerializeField] private string layout = 
-@"0000LrrL000000
-0000u00d0000e0
-0000u00Lrrre00
-0srrL00000000
-0000d00000LE00
-0000LrrL00u000
-0000000d00u0e0
-0000000LrrL000";
+    [SerializeField] private string[] layout = new string[5];
 
     [Header("Generated Nodes")]
     [SerializeField] private Dictionary<Vector2Int, PipeNode> pipes = new Dictionary<Vector2Int, PipeNode>();
@@ -89,9 +81,11 @@ public class PipeManager : MonoBehaviour
             ClearChildren();
 
         pipes.Clear();
+        
+        int randomPos = Mathf.RoundToInt(UnityEngine.Random.Range(0f, layout.Length-1));
 
         // Split into rows, ignore empty lines
-        string[] rows = layout.Replace("\r", "").Split('\n', StringSplitOptions.RemoveEmptyEntries);
+        string[] rows = layout[randomPos].Replace("\r", "").Split('\n', StringSplitOptions.RemoveEmptyEntries);
         if (rows.Length == 0)
         {
             Debug.LogError("[PipeManager] Layout is empty.");
