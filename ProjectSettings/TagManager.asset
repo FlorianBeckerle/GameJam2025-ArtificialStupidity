@@ -39,7 +39,7 @@ TagManager:
   - 
   - 
   - 
-  - 
+  - EditGizmos
   m_SortingLayers:
   - name: BG
     uniqueID: 407553693
