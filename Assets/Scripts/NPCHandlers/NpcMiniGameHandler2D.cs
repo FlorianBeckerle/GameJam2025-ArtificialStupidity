@@ -15,7 +15,10 @@ public class NpcMinigameHandler2D : MonoBehaviour
 
     [Header("Fallback Interaction")]
     [SerializeField] private string playerTag = "Player";
-    [SerializeField] private float interactDistance = 1.5f; // <- anpassen
+    [SerializeField] private float interactDistance = 1.5f;
+
+    [Header("Collision Gate")]
+    [SerializeField] private MinigameCollisionGate collisionGate; // <- NEU
 
     private NpcPatrolController2D npc;
     private Transform playerTf;
@@ -29,6 +32,9 @@ public class NpcMinigameHandler2D : MonoBehaviour
         npc = GetComponent<NpcPatrolController2D>();
         var player = GameObject.FindGameObjectWithTag(playerTag);
         if (player != null) playerTf = player.transform;
+
+        // optional: falls nicht im Inspector gesetzt
+        if (!collisionGate) collisionGate = FindFirstObjectByType<MinigameCollisionGate>();
     }
 
     void Update()
@@ -38,10 +44,9 @@ public class NpcMinigameHandler2D : MonoBehaviour
 
         bool canInteract = npc.PlayerInZone;
 
-        // Fallback: wenn Trigger nicht gefeuert hat, Distanz als Backup
-        if (!canInteract && playerTf != null)
+        if (playerTf != null)
         {
-            canInteract = Vector2.Distance(playerTf.position, transform.position) <= interactDistance;
+            canInteract |= Vector2.Distance(playerTf.position, transform.position) <= interactDistance;
         }
 
         if (!canInteract) return;
@@ -79,6 +84,9 @@ public class NpcMinigameHandler2D : MonoBehaviour
             return;
         }
 
+        // <<< WICHTIG: Colliders der Main Scene ausschalten, sobald Minigame da ist
+        if (collisionGate) collisionGate.Enter(activeGO.transform);
+
         activeMinigame.Solved += OnSolved;
         activeMinigame.Failed += OnFailed;
         activeMinigame.Begin();
@@ -93,8 +101,8 @@ public class NpcMinigameHandler2D : MonoBehaviour
 
     private void OnFailed()
     {
-        // NPC bleibt shortcircuited & waiting, Player muss erneut starten
         Cleanup(keepNpcWaiting: true);
+        npc.SetWaiting(true);
     }
 
     private void Cleanup(bool keepNpcWaiting = false)
@@ -104,6 +112,9 @@ public class NpcMinigameHandler2D : MonoBehaviour
             activeMinigame.Solved -= OnSolved;
             activeMinigame.Failed -= OnFailed;
         }
+
+        // <<< Revert Colliders zuerst (wichtig, falls Destroy noch Frame braucht)
+        if (collisionGate) collisionGate.Exit();
 
         if (activeGO != null) Destroy(activeGO);
 

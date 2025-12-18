@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 5712807966912445850}
   - component: {fileID: 2090714308368561225}
   - component: {fileID: -7786952185848654686}
-  m_Layer: 0
+  m_Layer: 10
   m_Name: GridManager
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -142,7 +142,7 @@ GameObject:
   - component: {fileID: 4426568139108913855}
   - component: {fileID: 2170702838572013550}
   - component: {fileID: 6451376879932094322}
-  m_Layer: 0
+  m_Layer: 10
   m_Name: Pipe Puzzle Camera
   m_TagString: Untagged
   m_Icon: {fileID: 0}
