@@ -1,4 +1,5 @@
 using UnityEngine;
+using System.Collections;
 
 public class AudioManager : MonoBehaviour
 {
@@ -11,6 +12,11 @@ public class AudioManager : MonoBehaviour
     [Header("Music Clips")]
     public AudioClip backgroundMusic;
     public AudioClip[] minigameMusic;
+
+    [Header("Settings")]
+    [Range(0f, 1f)] public float musicVolume = 0.5f;
+    [Range(0f, 1f)] public float sfxVolume = 1f;
+    [Range(0f, 5f)] public float fadeDuration = 1f;
 
     void Awake()
     {
@@ -29,32 +35,70 @@ public class AudioManager : MonoBehaviour
         PlayBackgroundMusic();
     }
 
-    // 🎵 Background Music
+    // ======================
+    // MUSIC
+    // ======================
+
     public void PlayBackgroundMusic()
     {
-        PlayMusic(backgroundMusic);
+        StartCoroutine(FadeMusic(backgroundMusic));
     }
 
-    // 🎮 Minigame Music
     public void PlayMinigameMusic(int index)
     {
         if (index < 0 || index >= minigameMusic.Length) return;
-        PlayMusic(minigameMusic[index]);
+        StartCoroutine(FadeMusic(minigameMusic[index]));
     }
 
-    void PlayMusic(AudioClip clip)
+    private IEnumerator FadeMusic(AudioClip newClip)
     {
-        if (musicSource.clip == clip) return;
+        if (musicSource.clip == newClip) yield break;
+
+        // Fade-Out
+        float t = 0f;
+        float startVolume = musicSource.volume;
+        while (t < fadeDuration)
+        {
+            t += Time.deltaTime;
+            musicSource.volume = Mathf.Lerp(startVolume, 0f, t / fadeDuration);
+            yield return null;
+        }
 
         musicSource.Stop();
-        musicSource.clip = clip;
+        musicSource.clip = newClip;
         musicSource.loop = true;
         musicSource.Play();
+
+        // Fade-In
+        t = 0f;
+        while (t < fadeDuration)
+        {
+            t += Time.deltaTime;
+            musicSource.volume = Mathf.Lerp(0f, musicVolume, t / fadeDuration);
+            yield return null;
+        }
+        musicSource.volume = musicVolume;
     }
 
-    // 🔊 Sound Effects
+    // ======================
+    // SFX
+    // ======================
+
     public void PlaySFX(AudioClip clip)
     {
-        sfxSource.PlayOneShot(clip);
+        if (clip == null) return;
+        sfxSource.PlayOneShot(clip, sfxVolume);
     }
+
+    // ======================
+    // ANIMATION EVENTS
+    // ======================
+
+    // Diese Methode kann direkt von Animation Events aufgerufen werden
+    public void PlayAnimationSFX(AudioClip clip)
+    {
+        PlaySFX(clip);
+    }
+
+    
 }

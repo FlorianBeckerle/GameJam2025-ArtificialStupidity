@@ -21,6 +21,8 @@ public class PipeMinigameAdapter : MonoBehaviour, INpcMinigame
             return;
         }
 
+        AudioManager.Instance.PlayMinigameMusic(0);
+
         pipe.Solved += HandleSolved;
         pipe.Failed += HandleFailed;
     }
@@ -29,12 +31,14 @@ public class PipeMinigameAdapter : MonoBehaviour, INpcMinigame
     {
         Unhook();
         Solved?.Invoke();
+        AudioManager.Instance.PlayBackgroundMusic();
     }
 
     private void HandleFailed()
     {
         // optional: nicht unhooken, wenn Pipe intern neu startbar ist
         Failed?.Invoke();
+        AudioManager.Instance.PlayMinigameMusic(3);
     }
 
     private void Unhook()
