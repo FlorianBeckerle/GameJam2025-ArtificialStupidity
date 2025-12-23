@@ -21,7 +21,10 @@ public class PipeMinigameAdapter : MonoBehaviour, INpcMinigame
             return;
         }
 
-        AudioManager.Instance.PlayMinigameMusic(0);
+        if (AudioManager.Instance != null)
+            AudioManager.Instance.PlayMinigameMusic(3);
+
+        else Debug.LogWarning("No AudioManager found in scene.", this);
 
         pipe.Solved += HandleSolved;
         pipe.Failed += HandleFailed;
@@ -31,7 +34,7 @@ public class PipeMinigameAdapter : MonoBehaviour, INpcMinigame
     {
         Unhook();
         Solved?.Invoke();
-        AudioManager.Instance.PlayBackgroundMusic();
+        if (AudioManager.Instance != null) AudioManager.Instance.PlayBackgroundMusic();
     }
 
     private void HandleFailed()
